@@ -15,7 +15,7 @@
 | 3 | `whalecodex_1.0.0_amd64.deb` | **Debian / Ubuntu 等（amd64 / x64）** | dpkg 安装包，装到 `/opt/whalecodex`，自动建 `/usr/bin/whalecodex` 软链与桌面项 | 内嵌 GPG 签名 `_gpgorigin` |
 | 4 | `WhaleCodex-1.0.0-x64.zip` | **Linux（x64，任意发行版）** | 免安装便携包，解压后 `chmod +x whalecodex && ./whalecodex` | 无内嵌机制，配同名 `.asc` |
 
-每个安装包都有**同名的 `.asc` 分离签名**；另有 `whalecodex_pubkey.asc`（发布公钥）与 `SHA256SUMS.txt`（全部文件 SHA-256）。
+每个安装包都有**同名的 `.asc` 分离签名**；另有 `whalecodex_pubkey.asc`（发布公钥）、`SHA256SUMS.txt`（全部文件 SHA-256）及其签名 `SHA256SUMS.txt.asc`（防止清单本身被替换）。
 
 ## 安装
 
@@ -50,7 +50,8 @@ gpg --verify WhaleCodex-Portable-1.0.0.exe.asc   WhaleCodex-Portable-1.0.0.exe
 gpg --verify whalecodex_1.0.0_amd64.deb.asc      whalecodex_1.0.0_amd64.deb
 gpg --verify WhaleCodex-1.0.0-x64.zip.asc        WhaleCodex-1.0.0-x64.zip
 
-# 3) 校验 SHA-256
+# 3) 先验证校验和清单本身的签名，再校验文件
+gpg --verify SHA256SUMS.txt.asc                SHA256SUMS.txt
 sha256sum -c SHA256SUMS.txt
 ```
 
@@ -69,7 +70,19 @@ ar p whalecodex_1.0.0_amd64.deb _gpgorigin | gunzip | gpg --verify
 - 语音转写、模型回复、工具调用等调试日志默认关闭，仅在显式设置 `WHALE_DEBUG=1` 时记录。
 - **无遥测、无隐藏外联、无全网监听**：网络请求仅限用户自行配置的模型 API 端点与本地回环地址。
 - 分发包内不含任何私钥、口令、License 主授权码或开发机绝对路径。
+- 设置文件中的 API Key / 提供商密钥经系统密钥环加密后落盘，不再以明文保存。
 - 如需排查问题并临时开启调试日志，请注意日志会包含会话内容，排查完请及时删除并关闭该开关。
+
+## 运行时安全加固（1.0.0 安全版）
+
+- **本地 API 令牌**：每次启动生成 256 位随机令牌，只存在于本进程内存；由本地服务注入页面，所有 `/api/*` 请求必须携带 `X-Whale-Token`。任意网页、DNS rebinding 或本机其它进程不再能直接调用本地接口读取聊天记录、修改设置或启动 Agent。
+- **来源白名单**：本地服务校验 `Host` 必须为回环地址，并校验 `Origin` / `Sec-Fetch-Site`；伪造 Host 与跨站请求一律返回 403。
+- **渲染进程隔离**：启用 sandbox / contextIsolation / webSecurity，禁用 Node 集成、webview、新窗口与外域导航；页面强制 CSP（脚本 nonce、`object-src 'none'`、`frame-ancestors 'none'`）与 `Referrer-Policy: no-referrer`。
+- **二进制加固**：Electron fuses 关闭 `ELECTRON_RUN_AS_NODE`、`NODE_OPTIONS`、`--inspect`，强制只从 `app.asar` 加载，并启用 asar 完整性校验与 Cookie 加密。
+- **启动门禁**：Windows 端比对发布证书指纹 `9D0758A2A7FAABE8E83E3773A4FB8C4274B790AA`，不再只凭签发者名称判断，可拦截被篡改或伪造签名的主程序。
+- **清单可验证**：`SHA256SUMS.txt.asc` 让完整性清单本身也受 GPG 保护。
+
+> 说明：开启 `runAsNode=false` 后，环境变量 `ELECTRON_RUN_AS_NODE` 不再能使程序退化为纯 Node 进程；若你此前依赖该变量启动，请直接用正常方式启动客户端。自签名 Authenticode 的 `UnknownError` 仍是预期现象，详见上文「安装」。
 
 ## 许可证与开源状态
 
