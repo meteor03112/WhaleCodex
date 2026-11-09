@@ -31,6 +31,13 @@
 - 运行时默认不落盘用户会话内容；语音转写、模型回复、工具调用日志仅在 `WHALE_DEBUG=1` 时记录。
 - 无遥测、无隐藏外联；网络请求仅限用户配置的模型 API 端点与本地回环地址。
 - 加固：Windows 启动完整性门禁原先只校验证书签发者名称（可被同名自签证书伪造），现改为**硬编码比对发布证书指纹** `9D0758A2A7FAABE8E83E3773A4FB8C4274B790AA`；同时兼容自签证书的 `UnknownError` 状态，避免误判退出。
+- **本次安全加固（全平台）**：
+  - 本地 HTTP 接口新增每进程随机令牌 + `Host` / `Origin` / `Sec-Fetch-Site` 白名单，阻断任意网页或本机其它进程越权调用 `/api/*`（读取会话、改设置、启动 Agent）。
+  - 渲染进程启用 sandbox / contextIsolation / webSecurity，禁用 Node 集成、webview、新窗口与外域导航；全站 CSP + `Referrer-Policy: no-referrer`。
+  - API Key 与提供商密钥改用系统密钥环（DPAPI / libsecret）加密落盘，兼容旧明文配置。
+  - Electron fuses：禁用 `ELECTRON_RUN_AS_NODE`、`NODE_OPTIONS`、`--inspect`，强制只从 `app.asar` 加载，启用 asar 完整性校验与 Cookie 加密。
+  - 修正 `require('./license')` 在 Windows 大小写不敏感文件系统下误命中 `LICENSE` 纯文本文件的加载缺陷。
+  - 新增 `SHA256SUMS.txt.asc`，校验和清单本身也受 GPG 签名保护。
 
 ## 校验方式
 
