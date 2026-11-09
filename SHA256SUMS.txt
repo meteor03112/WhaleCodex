@@ -1,0 +1,9 @@
+80683b33bb5b21257ebf6d8415797a08f0ce63c269dfa548fd1697eb53eee16b *WhaleCodex-Setup-1.0.0.exe
+32a827d82fd7fe60445a3d8749ebab4de623f86e30e4c6de52bdfece522dd699 *WhaleCodex-Portable-1.0.0.exe
+9bdfc72f4b90642da3cd032f4ca12dfe02ab5103a3030f73a9df3fcaae45df77 *whalecodex_1.0.0_amd64.deb
+4cf513637554756362a1f4ef07862cbe9785b9838f6ac512aac47e3d9ac126fb *WhaleCodex-1.0.0-x64.zip
+14e2cb980e106751aeda7d8127f4dc1f2f3189a06dd996560ecc959a389e1468 *WhaleCodex-Setup-1.0.0.exe.asc
+cd122d833d9b59937e7154d21c5316abc54e03ea8175161e409675a54e23e3b3 *WhaleCodex-Portable-1.0.0.exe.asc
+139f306ab1af94d59fabeb1c01afc770f87f9f2085385ace73147d90ad0ed742 *whalecodex_1.0.0_amd64.deb.asc
+54790f82c175ad2159caa8cfe6705784aa59cbe51d7948ce0ad5532175b2bf6c *WhaleCodex-1.0.0-x64.zip.asc
+c853c825afa98cc69e1432daddb954a9725fc59c7f1ba89389dabe617cf75d30 *whalecodex_pubkey.asc
