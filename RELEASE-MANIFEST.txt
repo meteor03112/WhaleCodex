@@ -1,0 +1,55 @@
+WhaleCodex（鲸鱼娘 · Codex 桌面客户端）1.0.0 — 发布清单
+==================================================
+生成时间：2026-11-09
+发布公钥指纹：6F84E4E00F86FD100CA94FEDF63AE65454CC2288（whalecodex_pubkey.asc）
+全部文件完整性见 SHA256SUMS.txt（sha256sum -c 校验）
+
+【Windows】
+1. WhaleCodex-Setup-1.0.0.exe        系统版本：Windows 10 / 11（x64）
+   形态：NSIS 安装包（安装到 Program Files，可自定义目录，oneClick=false）
+   签名：内嵌 Authenticode 代码签名（CN=WhaleCodex，自签，thumbprint 9D0758A2…790AA）
+        + 分离签名 WhaleCodex-Setup-1.0.0.exe.asc
+2. WhaleCodex-Portable-1.0.0.exe     系统版本：Windows 10 / 11（x64）
+   形态：便携版（免安装，双击即运行，适合 U 盘 / 无管理员权限场景）
+   签名：内嵌 Authenticode + 分离签名 WhaleCodex-Portable-1.0.0.exe.asc
+
+【Linux】
+3. whalecodex_1.0.0_amd64.deb       系统版本：Debian / Ubuntu 等（amd64 / x64）
+   形态：dpkg 安装包（装到 /opt/whalecodex；postinst 自动建 /usr/bin 软链 + chrome-sandbox setuid）
+   签名：内嵌 GPG 签名 _gpgorigin（dpkg-sig 约定，可被 debsig-verify 识别）
+        + 分离签名 whalecodex_1.0.0_amd64.deb.asc
+4. WhaleCodex-1.0.0-x64.zip         系统版本：Linux（x64，任意发行版）
+   形态：免安装便携包（解压后 chmod +x whalecodex && ./whalecodex）
+   签名：分离签名 WhaleCodex-1.0.0-x64.zip.asc
+
+【通用校验文件】
+- whalecodex_pubkey.asc   发布公钥（导入 GPG 后核验全部 GPG 签名）
+- SHA256SUMS.txt          全部交付物 SHA-256
+
+【说明】
+- 安装 / 校验 / 激活完整流程见发布仓库的 README.md。
+- Windows 为自签名证书，系统可能提示 "UnknownError / 发布者不受信任"，属预期现象；
+  签名本身真实有效，客户端的运行时完整性自检已兼容自签证书，可正常启动。
+- Linux 版不含语音输入（whisper），启动自动降级为无语音引擎，不影响主程序。
+- 所有 GPG 签名（.deb / .exe ×2 / .zip）均使用同一把发布密钥（指纹 6F84E4E0…），
+  用户只需导入一次 whalecodex_pubkey.asc 即可核验全部包。
+
+【关于签名与安装（重要）】
+- .asc 是"旁路边文件"，不打包进安装包内部，也不是安装/运行的必要条件：
+  即使没有它，四个包一样能正常安装使用；它只用于下载后自行核验来源与完整性。
+- 把签名"内置"进被签名的文件本身在技术上不可行（写回签名会改变文件字节、
+  使签名失效，形成自指悖论）。标准做法是「每个包 + 同名 .asc + 公钥 + 校验和清单」，
+  本目录 4 个安装包 ↔ 4 个 .asc 已一一对齐。
+- 真正内置的签名只有：Windows .exe 内嵌的 Authenticode（系统原生可校验，
+  也是客户端启动门禁检查对象）、.deb 内嵌的 _gpgorigin（可被 debsig-verify 识别）；
+  .zip 无内嵌签名机制，只能配外挂 .asc。
+- 唯一会因签名导致"用不了"的是客户端自身的启动完整性门禁，
+  此前因不兼容自签证书会误判退出，已修复，Windows 版可正常启动。
+
+【完整性核验】
+  gpg --import whalecodex_pubkey.asc
+  gpg --verify WhaleCodex-Setup-1.0.0.exe.asc    WhaleCodex-Setup-1.0.0.exe
+  gpg --verify WhaleCodex-Portable-1.0.0.exe.asc WhaleCodex-Portable-1.0.0.exe
+  gpg --verify whalecodex_1.0.0_amd64.deb.asc    whalecodex_1.0.0_amd64.deb
+  gpg --verify WhaleCodex-1.0.0-x64.zip.asc      WhaleCodex-1.0.0-x64.zip
+  sha256sum -c SHA256SUMS.txt
