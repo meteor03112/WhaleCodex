@@ -6,15 +6,17 @@ WhaleCodex（鲸鱼娘 · Codex 桌面客户端）1.1.0 免费版 — 发布清�
 【本版最重要变化】
 - 移除离线授权锁：不再需要授权码，没有激活页，下载安装后直接进主界面。
 - 免费版不再比对 Windows 发布证书指纹；asar 内嵌完整性校验仍然生效。
+- 模型目录精简：只保留实测可用的 7 个高质量模型，移除排队拥塞/未开通的 DeepSeek-V4.1-Flash、MiniMax-M3.1-Flash、GLM-5.3-Flash。
+- 「API 提供商」改为 DSH 风格预设模板卡片：内置「NVIDIA NIM」卡片（已登录 · 编辑/删除），可「＋ 添加 API 提供商」保存独立自定义模板（名称/接口地址/密钥/协议/模型目录分别保存，密钥加密落盘）。
 
 【Windows】
-1. WhaleCodex-Setup-1.1.0.exe        206 MB  NSIS 安装包（可自定义目录）
+1. WhaleCodex-Setup-1.1.0.exe        205 MB  NSIS 安装包（可自定义目录）
    签名：内嵌 Authenticode（CN=WhaleCodex，自签，thumbprint 9D0758A2…790AA）+ 分离签名 .asc
-2. WhaleCodex-Portable-1.1.0.exe     182 MB  便携版（免安装，双击即运行）
+2. WhaleCodex-Portable-1.1.0.exe     181 MB  便携版（免安装，双击即运行）
    签名：同上
 
 【Linux】
-3. WhaleCodex-1.1.0-x64.zip          278 MB  免安装便携包
+3. WhaleCodex-1.1.0-x64.zip          286 MB  免安装便携包
    权限：已写入 Unix 权限位（whalecodex / chrome-sandbox / whisper-server / codex 均为 755 或 4755）
    启动：解压后若 chrome-sandbox 的 setuid 未生效，执行
          sudo chown root:root chrome-sandbox && sudo chmod 4755 chrome-sandbox
