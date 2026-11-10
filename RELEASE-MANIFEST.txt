@@ -1,79 +1,31 @@
-WhaleCodex（鲸鱼娘 · Codex 桌面客户端）1.0.0 — 发布清单
+WhaleCodex（鲸鱼娘 · Codex 桌面客户端）1.1.0 免费版 — 发布清单
 ==================================================
-生成时间：2026-11-09
+生成时间：2026-11-10
 发布公钥指纹：6F84E4E00F86FD100CA94FEDF63AE65454CC2288（whalecodex_pubkey.asc）
-全部文件完整性见 SHA256SUMS.txt（sha256sum -c 校验）
-本轮安全加固版哈希：Setup c5eb922e… / Portable fc9ccacd… / deb 83910548… / zip 16d432b2…
+
+【本版最重要变化】
+- 移除离线授权锁：不再需要授权码，没有激活页，下载安装后直接进主界面。
+- 免费版不再比对 Windows 发布证书指纹；asar 内嵌完整性校验仍然生效。
 
 【Windows】
-1. WhaleCodex-Setup-1.0.0.exe        系统版本：Windows 10 / 11（x64）
-   形态：NSIS 安装包（安装到 Program Files，可自定义目录，oneClick=false）
-   签名：内嵌 Authenticode 代码签名（CN=WhaleCodex，自签，thumbprint 9D0758A2…790AA）
-        + 分离签名 WhaleCodex-Setup-1.0.0.exe.asc
-2. WhaleCodex-Portable-1.0.0.exe     系统版本：Windows 10 / 11（x64）
-   形态：便携版（免安装，双击即运行，适合 U 盘 / 无管理员权限场景）
-   签名：内嵌 Authenticode + 分离签名 WhaleCodex-Portable-1.0.0.exe.asc
+1. WhaleCodex-Setup-1.1.0.exe        206 MB  NSIS 安装包（可自定义目录）
+   签名：内嵌 Authenticode（CN=WhaleCodex，自签，thumbprint 9D0758A2…790AA）+ 分离签名 .asc
+2. WhaleCodex-Portable-1.1.0.exe     182 MB  便携版（免安装，双击即运行）
+   签名：同上
 
 【Linux】
-3. whalecodex_1.0.0_amd64.deb       系统版本：Debian / Ubuntu 等（amd64 / x64）
-   形态：dpkg 安装包（装到 /opt/whalecodex；postinst 自动建 /usr/bin 软链 + chrome-sandbox setuid）
-   签名：内嵌 GPG 签名 _gpgorigin（dpkg-sig 约定，可被 debsig-verify 识别）
-        + 分离签名 whalecodex_1.0.0_amd64.deb.asc
-4. WhaleCodex-1.0.0-x64.zip         系统版本：Linux（x64，任意发行版）
-   形态：免安装便携包（解压后 chmod +x whalecodex && ./whalecodex）
-   签名：分离签名 WhaleCodex-1.0.0-x64.zip.asc
+3. WhaleCodex-1.1.0-x64.zip          278 MB  免安装便携包
+   权限：已写入 Unix 权限位（whalecodex / chrome-sandbox / whisper-server / codex 均为 755 或 4755）
+   启动：解压后若 chrome-sandbox 的 setuid 未生效，执行
+         sudo chown root:root chrome-sandbox && sudo chmod 4755 chrome-sandbox
+         或直接 ./whalecodex --no-sandbox（功能一致，放弃 Chromium 沙箱隔离）
+   签名：仅分离签名 .asc（zip 无内嵌签名机制）
+   注：1.1.0 未产出 .deb（deb 需在 Linux 环境用 fpm 打包，本轮构建在 Windows 上完成）。
 
-【通用校验文件】
-- whalecodex_pubkey.asc   发布公钥（导入 GPG 后核验全部 GPG 签名）
-- SHA256SUMS.txt          全部交付物 SHA-256
-- SHA256SUMS.txt.asc      SHA256SUMS.txt 的 GPG 分离签名（防止清单被替换）
+【校验】
+- SHA256SUMS.txt（7 项，含三个包与各自 .asc 及公钥）+ SHA256SUMS.txt.asc（清单本身已签名）
+- 用户侧核验：gpg --import whalecodex_pubkey.asc && gpg --verify *.asc && sha256sum -c SHA256SUMS.txt
 
-【安全加固（1.0.0 安全版，全部四包已重建）】
-- 本地 API 令牌：每次启动生成 256 位随机令牌，仅存进程内存；页面注入令牌，
-  所有 /api/* 请求必须带 X-Whale-Token。任意网页 / DNS rebinding / 其它本机进程
-  都不能再直接读写会话、改设置或启动 Agent。
-- 来源白名单：校验 Host 必须为回环地址，并校验 Origin / Sec-Fetch-Site，
-  伪造 Host 与跨站请求一律 403。
-- 渲染进程：sandbox + contextIsolation + webSecurity；禁用 Node 集成、webview、
-  新窗口与外域导航；全站 CSP（nonce 脚本 / object-src 'none' / frame-ancestors 'none'）
-  与 Referrer-Policy: no-referrer。
-- 凭据：API Key / 提供商密钥改用系统密钥环（DPAPI / libsecret）加密后写入 settings.json，
-  旧明文配置自动兼容。
-- 二进制 fuses：关闭 ELECTRON_RUN_AS_NODE / NODE_OPTIONS / --inspect，
-  强制只从 app.asar 加载，启用 asar 完整性校验与 Cookie 加密。
-- 启动门禁：Windows 硬编码比对发布证书指纹 9D0758A2A7FAABE8E83E3773A4FB8C4274B790AA。
-- 修复：require('./license') 在 Windows 大小写不敏感文件系统下会误命中 LICENSE
-  纯文本文件（上一轮把 LICENSE 加入包内引入的加载缺陷），已改为显式 ./license.js。
-
-【说明】
-- 安装 / 校验 / 激活完整流程见发布仓库的 README.md。
-- Windows 为自签名证书，系统可能提示 "UnknownError / 发布者不受信任"，属预期现象；
-  签名本身真实有效，客户端的运行时完整性自检已兼容自签证书，可正常启动。
-- Linux 版不含语音输入（whisper），启动自动降级为无语音引擎，不影响主程序。
-- 所有 GPG 签名（.deb / .exe ×2 / .zip）均使用同一把发布密钥（指纹 6F84E4E0…），
-  用户只需导入一次 whalecodex_pubkey.asc 即可核验全部包。
-- 许可：专有（闭源）软件，仓库不提供源代码；授权条款与第三方组件许可证全文见 LICENSE。
-- Windows 启动门禁已改为比对发布证书指纹 9D0758A2A7FAABE8E83E3773A4FB8C4274B790AA，
-  不再仅凭签发者名称判断，可阻止同名自签证书伪造。
-
-【关于签名与安装（重要）】
-- .asc 是"旁路边文件"，不打包进安装包内部，也不是安装/运行的必要条件：
-  即使没有它，四个包一样能正常安装使用；它只用于下载后自行核验来源与完整性。
-- 把签名"内置"进被签名的文件本身在技术上不可行（写回签名会改变文件字节、
-  使签名失效，形成自指悖论）。标准做法是「每个包 + 同名 .asc + 公钥 + 校验和清单」，
-  本目录 4 个安装包 ↔ 4 个 .asc 已一一对齐。
-- 真正内置的签名只有：Windows .exe 内嵌的 Authenticode（系统原生可校验，
-  也是客户端启动门禁检查对象）、.deb 内嵌的 _gpgorigin（可被 debsig-verify 识别）；
-  .zip 无内嵌签名机制，只能配外挂 .asc。
-- 唯一会因签名导致"用不了"的是客户端自身的启动完整性门禁：
-  此前因不兼容自签证书会误判退出（已修复），现进一步改为比对发布证书指纹，
-  Windows 版可正常启动，且能识别被伪造签名的篡改包。
-
-【完整性核验】
-  gpg --import whalecodex_pubkey.asc
-  gpg --verify WhaleCodex-Setup-1.0.0.exe.asc    WhaleCodex-Setup-1.0.0.exe
-  gpg --verify WhaleCodex-Portable-1.0.0.exe.asc WhaleCodex-Portable-1.0.0.exe
-  gpg --verify whalecodex_1.0.0_amd64.deb.asc    whalecodex_1.0.0_amd64.deb
-  gpg --verify WhaleCodex-1.0.0-x64.zip.asc      WhaleCodex-1.0.0-x64.zip
-  gpg --verify SHA256SUMS.txt.asc               SHA256SUMS.txt
-  sha256sum -c SHA256SUMS.txt
+【已知提示】
+- 自签证书在 Windows 上会触发 SmartScreen「发布者不受信任」，属预期现象，签名本身有效。
+- 便携版首次启动会把自己解压到 %TEMP%，杀软可能短暂扫描，属正常。
