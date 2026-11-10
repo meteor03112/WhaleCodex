@@ -16,7 +16,7 @@ WhaleCodex（鲸鱼娘 · Codex 桌面客户端）1.1.0 免费版 — 发布清�
    签名：同上
 
 【Linux】
-3. WhaleCodex-1.1.0-x64.zip          286 MB  免安装便携包
+3. WhaleCodex-1.1.0-x64.zip          277 MB  免安装便携包
    权限：已写入 Unix 权限位（whalecodex / chrome-sandbox / whisper-server / codex 均为 755 或 4755）
    启动：解压后若 chrome-sandbox 的 setuid 未生效，执行
          sudo chown root:root chrome-sandbox && sudo chmod 4755 chrome-sandbox
