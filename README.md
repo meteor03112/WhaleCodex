@@ -4,7 +4,7 @@
 
 CI 模板位于 [docs/ci-workflow.yml.example](docs/ci-workflow.yml.example)，当前未启用 GitHub Actions；本次发布已在本机运行语法和模块回归检查。
 
-<p align="center"><img src="assets/logo.svg" width="160" alt="WhaleCodex 原创几何鲸鱼 logo"></p>
+<p align="center"><img src="assets/logo.png" width="160" alt="WhaleCodex 原鲸鱼娘图标"></p>
 
 把模型对话、编程任务和任务产物放在同一个桌面工作台。
 
@@ -105,12 +105,12 @@ D1 helper 不随仓库或默认构建分发。Windows 上单独准备具有合�
 app/                 可读主进程、渲染器、桥接与前端资源
 app/vendor/licenses/ 内置前端库许可
 app/themes/          默认禁用的非商业可选主题及其上游许可
-assets/              本次绘制的几何鲸鱼 logo、应用图标
+assets/              原鲸鱼娘图标、头像和应用图标
 scripts/             语法检查与可选运行时构建脚本
 tests/               附件存储、IPC、下载与边界测试（含显式 Electron/DOM 替身）
 docs/                公开准备审计与发布文案
 ```
 
-WhaleCodex 独立主代码、文档及本次原创几何 logo 采用 [Apache-2.0](LICENSE)，版权与组件说明见 [NOTICE](NOTICE)。**该许可不覆盖第三方组件与非商业主题。** `app/themes/whale-fantasy` 保留上游 CC BY-NC-SA 4.0 许可及来源，不能将其标成 Apache-2.0；需要商业用途时请移除该目录或取得相应权利。默认构建已经排除主题目录。公开 logo 不使用用户截图、上游主题人物或来源不明的品牌图片；连接器图标采用本次生成的文字标识，不表示第三方背书。
+WhaleCodex 独立主代码及文档采用 [Apache-2.0](LICENSE)，版权与组件说明见 [NOTICE](NOTICE)。**该许可不覆盖第三方组件与非商业主题。** `app/themes/whale-fantasy` 保留上游 CC BY-NC-SA 4.0 许可及来源，不能将其标成 Apache-2.0；需要商业用途时请移除该目录或取得相应权利。默认构建已经排除主题目录。原鲸鱼娘图标和头像按项目所有者要求保留；人物图像与连接器品牌图标的权利归各自权利人，不因代码 Apache-2.0 许可而自动转让，不表示第三方背书。
 
 内置 marked、DOMPurify、highlight.js、OpenCC 转换代码按其各自许可使用，详见 `app/vendor/licenses`。签名验证所需的公钥可以公开；仓库不包含签名私钥。安全问题参见 [SECURITY.md](SECURITY.md)，贡献方式参见 [CONTRIBUTING.md](CONTRIBUTING.md)，变更记录见 [CHANGELOG.md](CHANGELOG.md)。

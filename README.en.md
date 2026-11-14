@@ -4,7 +4,7 @@
 
 A CI template is provided in [docs/ci-workflow.yml.example](docs/ci-workflow.yml.example). GitHub Actions is not enabled; release checks were run locally.
 
-<p align="center"><img src="assets/logo.svg" width="160" alt="Original geometric WhaleCodex logo"></p>
+<p align="center"><img src="assets/logo.png" width="160" alt="Original WhaleCodex mascot icon"></p>
 
 An Electron desktop workspace for model conversations, coding tasks and task outputs.
 
@@ -27,4 +27,4 @@ Builds work without bundled external engines, producing an application shell. Se
 
 Windows is the primary desktop target. Linux needs matching actual binary architectures and system libraries. macOS has basic build configuration but has not passed device acceptance. D1 semantic desktop control is Windows-specific, **off by default and awaiting acceptance**; the separately supplied helper must match pinned checks. F1 attachment cards exist, but **dragging into a target application has not been accepted**.
 
-Independent application code, documentation and the newly drawn geometric logo are licensed under Apache-2.0. Third-party licenses remain separate. The optional whale-fantasy theme is CC BY-NC-SA 4.0, disabled and excluded from default builds; upstream media/previews are omitted. See [NOTICE](NOTICE), [LICENSE](LICENSE), [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+Independent application code and documentation are licensed under Apache-2.0. The original mascot/avatar and connector branding are retained as requested by the project owner; their rights remain with their respective owners. Third-party licenses remain separate. The optional whale-fantasy theme is CC BY-NC-SA 4.0, disabled and excluded from default builds; upstream media/previews are omitted. See [NOTICE](NOTICE), [LICENSE](LICENSE), [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
