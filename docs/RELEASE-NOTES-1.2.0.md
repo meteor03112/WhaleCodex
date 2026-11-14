@@ -45,6 +45,6 @@ gpg --verify WhaleCodex-1.2.0-linux-arm64.tar.gz.asc WhaleCodex-1.2.0-linux-arm6
 - D1 Windows 语义桌面桥默认关闭、待正式验收；helper 需另行准备并核验版本/哈希。未开放物理鼠标键盘模拟或任意桌面控制。
 - macOS、Linux x64 本次不提供二进制，源码含构建入口，不代表平台验收通过。
 
-模型账号/API 密钥需自行配置；Release 包含匹配平台的外部 Codex 与 whisper 运行时，但不含用户设置、聊天记录、API 密钥或模型权重。第三方运行时保留原许可。可选 CC BY-NC-SA 主题独立注明，默认关闭且不打入二进制。
+模型账号/API 密钥需自行配置；Release 包含匹配平台的外部 Codex 与 whisper 运行时，但不含用户设置、聊天记录、API 密钥或模型权重。第三方运行时保留原许可。原版 CC BY-NC-SA 主题独立注明，保持启用且完整打入二进制。
 
 源码：[meteor03112/WhaleCodex](https://github.com/meteor03112/WhaleCodex) · 下载：[Releases](https://github.com/meteor03112/WhaleCodex/releases) · 反馈：[Issues](https://github.com/meteor03112/WhaleCodex/issues)

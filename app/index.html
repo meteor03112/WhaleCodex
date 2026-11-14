@@ -1,6 +1,5 @@
-<!-- Modified for public source release, 2026-11-14: base theme, no third-party media. -->
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-whale-skin="whale-fantasy">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1037,8 +1036,8 @@
     background:var(--surface);color:var(--text);padding:6px 8px;font:inherit;font-size:12.5px;outline:none;
   }
 </style>
-
-
+<link rel="stylesheet" href="/themes/whale-fantasy/whale-native.css">
+<link rel="stylesheet" href="/themes/whale-fantasy/whale-workbench.css">
 </head>
 <body>
 <div class="app" style="display:flex;width:100%;height:100vh">
@@ -1167,7 +1166,7 @@
         <button type="button" class="set-nav-i" data-cat="voice">语音</button>
         <button type="button" class="set-nav-i" data-cat="diag">自检与诊断</button>
       </nav>
-      <div class="set-side-foot">WhaleCodex <span id="setVer">1.2.0</span></div>
+      <div class="set-side-foot">WhaleCodex <span id="setVer">1.1.0</span></div>
     </aside>
     <section class="set-main">
       <header class="set-main-head">
@@ -1366,7 +1365,7 @@
         <div class="sect-t">Agent 安全</div>
         <div class="fld">
           <label>工作目录白名单（每行一个根目录）</label>
-          <div class="row2"><textarea id="sAgentRoots" rows="2" placeholder="每行一个允许的根目录，请使用文件夹选择按钮" style="resize:vertical"></textarea><button id="sAgentRootsPick" title="选择并添加目录">📂</button></div>
+          <div class="row2"><textarea id="sAgentRoots" rows="2" placeholder="每行一个允许的根目录，如 D:\work" style="resize:vertical"></textarea><button id="sAgentRootsPick" title="选择并添加目录">📂</button></div>
           <div class="note">Agent 只能在这些目录内读写；越界会被直接拒绝。留空时由程序选择默认工作目录。点 📂 可自主选择目录并自动迁移该目录下的工作数据。</div>
         </div>
         <div class="fld">
@@ -1420,7 +1419,7 @@
             作者：stushansusu<br>
             来源：zhu1090093659/dsh-web，固定提交 971cc3e1f6f5b52bbcd86802a9be0e0c50fc32f1<br>
             许可：Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International（CC BY-NC-SA 4.0）<br>
-            公开版默认不加载该可选主题；背景视频与预览图不随公开源码分发。<br>
+            原始背景视频由作者提供并按原项目流程制成循环；WhaleCodex 保留原分发文件，未裁剪、未重编码。<br>
             适配说明：为 WhaleCodex 原生界面重新映射选择器、资源加载与组件外观；宏观布局参考 WorkBuddy；未引入 DSH 插件宿主。<br>
             本皮肤改编部分依 CC BY-NC-SA 4.0 分享；WhaleCodex 其他独立代码及第三方组件按各自许可处理。<br>
             保留作者原有说明及许可中的免责声明；不暗示作者为客户端提供背书。
@@ -1583,7 +1582,7 @@
 <script src="/vendor/purify.min.js"></script>
 <script src="/vendor/highlight.min.js"></script>
 <script src="./reasoning-slider.js"></script>
-
+<script src="/themes/whale-fantasy/whale-background.js"></script>
 <script src="./connectors.js"></script>
 <script src="./attachment-ui.js"></script>
 <script src="./text-stream.js"></script>

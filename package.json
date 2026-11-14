@@ -23,7 +23,7 @@
     "productName": "WhaleCodex",
     "copyright": "Copyright © 2026 WhaleCodex contributors",
     "directories": { "output": "dist", "buildResources": "assets" },
-    "files": ["app/**/*", "package.json", "LICENSE", "NOTICE", "README.md", "!app/themes/**"],
+    "files": ["app/**/*", "package.json", "LICENSE", "NOTICE", "README.md"],
     "extraResources": [{ "from": "assets", "to": "assets" }, { "from": "app/whale-mcp-server.js", "to": "mcp/whale-mcp-server.js" }],
     "npmRebuild": false,
     "asar": true,

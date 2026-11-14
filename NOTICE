@@ -19,12 +19,12 @@ Third-party frontend components retain their respective licenses:
 See app/vendor/licenses and file headers for license texts.
 
 OPTIONAL NONCOMMERCIAL THEME EXCEPTION
-app/themes/whale-fantasy contains adapted theme code under CC BY-NC-SA 4.0,
+app/themes/whale-fantasy contains adapted theme code and original media under CC BY-NC-SA 4.0,
 not Apache-2.0. Original author: stushansusu.
 Source: zhu1090093659/dsh-web, commit 971cc3e1f6f5b52bbcd86802a9be0e0c50fc32f1,
 market/dist/assets/skins/whale-fantasy.
-The upstream license and attribution are retained. Upstream video and preview
-images are omitted. The theme is disabled and excluded from default packages.
+The upstream license, attribution, original video and preview images are retained.
+The original theme remains enabled and included in release packages.
 
 Electron, Chromium, electron-builder and external Codex/whisper/model runtimes
 retain their own licenses. External binaries are not included in this source tree.

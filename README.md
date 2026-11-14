@@ -36,7 +36,7 @@ GPG 指纹：`6F84E4E00F86FD100CA94FEDF63AE65454CC2288`。
 | 本地语音输入 | 需要外部 whisper-server 与模型；模型管理包含 HTTPS 下载、签名与摘要校验代码；服务源可用性未承诺 |
 | D1 桌面语义桥 | **待验收，默认关闭**（`desktopControl=false`）；仅面向 Windows 的匹配 helper，受版本、hash、窗口白名单和授权限制；不宣称任意桌面控制 |
 | F1 回复附件 | 含受控附件登记、卡片及 IPC 代码；**向目标应用拖入文件的行为尚未验收**，不能据此承诺跨应用拖放完成 |
-| 可选 whale-fantasy 主题 | 默认不启用、不打入构建。适配代码与上游许可保留在独立目录，采用 CC BY-NC-SA 4.0；视频及预览图不分发 |
+| 原版 whale-fantasy 主题 | 默认启用并完整随包分发，保留原动态背景、样式、预览及许可；主题采用 CC BY-NC-SA 4.0，独立于代码许可 |
 
 ## 平台差异
 
@@ -104,13 +104,13 @@ D1 helper 不随仓库或默认构建分发。Windows 上单独准备具有合�
 ```text
 app/                 可读主进程、渲染器、桥接与前端资源
 app/vendor/licenses/ 内置前端库许可
-app/themes/          默认禁用的非商业可选主题及其上游许可
+app/themes/          原版美化主题、动态背景及其上游许可
 assets/              原鲸鱼娘图标、头像和应用图标
 scripts/             语法检查与可选运行时构建脚本
 tests/               附件存储、IPC、下载与边界测试（含显式 Electron/DOM 替身）
 docs/                公开准备审计与发布文案
 ```
 
-WhaleCodex 独立主代码及文档采用 [Apache-2.0](LICENSE)，版权与组件说明见 [NOTICE](NOTICE)。**该许可不覆盖第三方组件与非商业主题。** `app/themes/whale-fantasy` 保留上游 CC BY-NC-SA 4.0 许可及来源，不能将其标成 Apache-2.0；需要商业用途时请移除该目录或取得相应权利。默认构建已经排除主题目录。原鲸鱼娘图标和头像按项目所有者要求保留；人物图像与连接器品牌图标的权利归各自权利人，不因代码 Apache-2.0 许可而自动转让，不表示第三方背书。
+WhaleCodex 独立主代码及文档采用 [Apache-2.0](LICENSE)，版权与组件说明见 [NOTICE](NOTICE)。**该许可不覆盖第三方组件与非商业主题。** `app/themes/whale-fantasy` 保留上游 CC BY-NC-SA 4.0 许可及来源，不能将其标成 Apache-2.0；需要商业用途时请移除该目录或取得相应权利。默认构建保留并启用原版主题及其全部资源。原鲸鱼娘图标和头像按项目所有者要求保留；人物图像与连接器品牌图标的权利归各自权利人，不因代码 Apache-2.0 许可而自动转让，不表示第三方背书。
 
 内置 marked、DOMPurify、highlight.js、OpenCC 转换代码按其各自许可使用，详见 `app/vendor/licenses`。签名验证所需的公钥可以公开；仓库不包含签名私钥。安全问题参见 [SECURITY.md](SECURITY.md)，贡献方式参见 [CONTRIBUTING.md](CONTRIBUTING.md)，变更记录见 [CHANGELOG.md](CHANGELOG.md)。

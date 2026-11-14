@@ -1,4 +1,3 @@
-// Modified for public source portability, 2026-11-14.
 
 const $ = s => document.querySelector(s);
 const store = {
@@ -1594,7 +1593,7 @@ async function runAgent(task, node){
   if(sb==='danger-full-access' && !confirm('「完全权限」允许 Agent 读写全盘。确定继续吗？')){
     updateAI(node,'（已取消完全权限任务）','',false); toast('已取消'); return;
   }
-  const dir = $('#aDir').value || '';
+  const dir = $('#aDir').value || 'E:\\ai';
   const res = await fetch('/api/agent',{
     method:'POST', headers:{'Content-Type':'application/json'}, signal:abort.signal,
     body: JSON.stringify({ task, dir, sandbox: sb, model: MODEL, confirmDanger: sb==='danger-full-access', sessionId: activeId, threadId: 'main' })
@@ -3408,7 +3407,7 @@ function bindMenuToggle(btnSel, panelSel, openFn){
 })();
 bindMenuToggle('#btnPerm', '#menuPerm', (b)=> openPermMenu(b));
 $('#aSandbox').onchange = syncPermLabel;
-$('#navAgent').onclick = ()=>{ $('#aDir').value = store.get('whale.dir',''); $('#modalAgent').classList.add('show'); };
+$('#navAgent').onclick = ()=>{ $('#aDir').value = store.get('whale.dir','E:\\ai'); $('#modalAgent').classList.add('show'); };
 $('#navMemory').onclick = ()=>{ $('#drawer').classList.add('show'); loadMemory(''); };
 $('#navSettings').onclick = openSettings;
 $('#hbSettings').onclick = openSettings;
@@ -3633,7 +3632,7 @@ async function chooseDirFor(inputSel, label){
   await persistDirs();
 }
 async function chooseAgentDir(){
-  const oldPath = $('#aDir').value.trim() || '';
+  const oldPath = $('#aDir').value.trim() || 'E:\\ai';
   const picked = await pickFolder(oldPath);
   if(picked === null || picked === oldPath) return;
   if(oldPath){
@@ -3672,7 +3671,7 @@ if($('#sAgentRootsPick')) $('#sAgentRootsPick').onclick = async ()=>{
 $('#aCancel').onclick = ()=> $('#modalAgent').classList.remove('show');
 $('#aClose').onclick = ()=> $('#modalAgent').classList.remove('show');
 $('#aSave').onclick = ()=>{
-  const dir=$('#aDir').value.trim()||'';
+  const dir=$('#aDir').value.trim()||'E:\\ai';
   store.set('whale.dir', dir);
   $('#modalAgent').classList.remove('show');
   setMode('agent');

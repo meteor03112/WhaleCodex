@@ -3246,7 +3246,9 @@ async function runSelfcheck() {
   // 只探页面脚本：/index.html 本身受令牌守卫（无令牌 401 是正常的），
   // 真正会「文件在包里但浏览器拿不到」的是脚本白名单漏登记。
   const assetPaths = ['/attachment-ui.js', '/renderer.js', '/connectors.js', '/reasoning-slider.js', '/workbench.js', '/text-stream.js',
-    '/vendor/highlight-dark.css'];
+    '/themes/whale-fantasy/whale-native.css',
+    '/themes/whale-fantasy/whale-background.js',
+    '/themes/whale-fantasy/whale-workbench.css'];
   const assetCodes = await Promise.all(assetPaths.map(u =>
     httpProbe('http://127.0.0.1:' + localPort + u)));
   const assetBad = assetPaths.filter((u, i) => assetCodes[i] !== 200);
