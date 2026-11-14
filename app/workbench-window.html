@@ -1,0 +1,46 @@
+<!-- Modified for public source release, 2026-11-14: base theme, no third-party media. -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WhaleCodex 工作台</title>
+
+
+<style>
+  /* 工具窗：只渲染工作台，不加载主聊天；铺满客户区，不做覆盖层。 */
+  html, body { height: 100%; margin: 0; overflow: hidden; background: #05070d; }
+  .app { display: block !important; width: 100% !important; height: 100vh !important; background: transparent; }
+  .whale-workbench {
+    position: static !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none;
+    border-left: 0;
+    box-shadow: none;
+  }
+  .wb-splitter { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="whale-workbench" id="workbench" aria-label="工作台">
+    <div class="wb-head">
+      <div class="wb-title"><span class="wb-dot"></span><span id="wbPanelName">工作台</span></div>
+      <div class="wb-tools">
+        <button class="wb-mini" id="wbDock" title="停靠回主窗口">停靠</button>
+        <button class="wb-mini wb-x" id="wbClose" title="关闭工具窗（任务继续后台运行）">关闭</button>
+      </div>
+    </div>
+    <div class="wb-nav" id="wbTabs" role="tablist" aria-label="工作台功能"></div>
+    <div class="wb-body" id="wbBody"></div>
+  </section>
+</div>
+<script src="/vendor/marked.js"></script>
+<script src="/vendor/purify.min.js"></script>
+<script src="/vendor/highlight.min.js"></script>
+<script src="/attachment-ui.js"></script>
+<script src="/text-stream.js"></script>
+<script src="/workbench.js"></script>
+</body>
+</html>

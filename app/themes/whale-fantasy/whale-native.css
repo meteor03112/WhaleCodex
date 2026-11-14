@@ -1,0 +1,1525 @@
+/**
+ * 鲸鱼娘 · 未至之境 (Whale Girl · The Unreached) — WhaleCodex 原生适配层
+ *
+ * 来源：zhu1090093659/dsh-web，固定提交 971cc3e1f6f5b52bbcd86802a9be0e0c50fc32f1
+ *       market/dist/assets/skins/whale-fantasy
+ * 作者：stushansusu
+ * 许可：CC BY-NC-SA 4.0（皮肤与背景视频）
+ *
+ * 本文件不是上游文件的原样副本，而是为 WhaleCodex 原生界面重新映射选择器的适配层。
+ * 上游原文保留在 ./upstream/ 下供追溯，不直接作为运行样式加载。
+ *
+ * 分层（对应《整体美化计划》§4.1）：
+ *   1. 来源与许可        —— 本注释
+ *   2. 原作变量          —— 保留 alpha 与字体角色
+ *   3. WhaleCodex 语义 token 映射
+ *   4. WB 空间布局       —— 不声明皮肤材质
+ *   5. 原作组件视觉      —— 取最终级联值（输入 10px / 菜单 10px / 代码 8px / 用户轮 9px）
+ *   6. 状态              —— hover / focus / disabled / rec / stop / error
+ *   7. body 门户         —— 菜单 / 滑块 / tooltip / toast
+ *   8. 客户端专有控件    —— 推理滑块、诊断表、连接器
+ *   9. 窄窗 / 容器查询 / reduced-motion
+ *
+ * 适配差异（不冒充上游同款，详见 ATTRIBUTION.md）：
+ *   · 原生系统标题栏不在 Web 皮肤可控范围，保留窗口机制。
+ *   · 上游的 ff-lift（把 -2 层背景抬到 1）是针对原宿主合成顺序的修正；
+ *     本客户端背景层从正层级起步，故不复制该负层级与 700ms 延迟跳变。
+ *   · 推理滑块的 Ultra / 能量渐变是客户端独有交互，上游无同款控件。
+ *   · highlight.js 的语法类上游没有一对一映射，本文件按皮肤语言逐类建立。
+ */
+
+/* ══ 2 · 原作变量 ═══════════════════════════════════════════════════════════ */
+html[data-whale-skin="whale-fantasy"] {
+  color-scheme: dark;
+
+  /* 上游 patches.css §0 的调色板，alpha 原样保留 */
+  --ff-ink: #e8f1fff2;
+  --ff-ink-soft: #e8f1ff8f;
+  --ff-ink-faint: #e8f1ff4d;
+  --ff-edge: #1e3a6beb;
+  --ff-edge-soft: #1e3a6b8c;
+  --ff-edge-faint: #1e3a6b52;
+  --ff-brand: #3a7bff;
+  --ff-brand-soft: #3a7bff4d;
+  --ff-brand-lift: #679aff;
+  --ff-cyan: #39ffd1;
+  --ff-cyan-soft: #39ffd157;
+  --ff-cyan-faint: #39ffd121;
+  --ff-glass: #0a10206b;
+  --ff-glass-card: #0a102094;
+  --ff-glass-sheet: #0a102066;
+
+  /* 字体角色：机壳与读数走等宽，正文散文留比例字体 */
+  --ff-mono: 'Cascadia Mono', 'Cascadia Code', 'JetBrains Mono', Consolas, DengXian, ui-monospace, monospace;
+  --ff-prose: 'Segoe UI Variable Text', DengXian, 'Microsoft YaHei UI', 'Noto Sans SC', system-ui, sans-serif;
+  --ff-display: Bahnschrift, 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+
+  /* WB 空间参数（设计适配值，不是上游或 WB 的运行时实测值） */
+  --wb-side-w: 264px;
+  --wb-column-w: 848px;
+  --wb-gutter: 24px;
+  --wb-header-h: 56px;
+
+  /* ══ 3 · 语义 token 映射 ═══════════════════════════════════════════════
+     把基础内嵌 CSS 的浅色语义变量整体换到皮肤色系，使既有组件无需逐个改写。 */
+  --bg: #05070d;
+  --sidebar: #0a10206b;
+  --line: #1e3a6b73;
+  --line-strong: #1e3a6bcc;
+  --text: #e8f1ff;
+  --text-2: #b4c7e1;
+  --text-3: #9ab1d2;
+  --accent: #3a7bff;
+  --accent-soft: #3a7bff29;
+  --user-bubble: #3a7bff1f;
+  --danger: #ff6e8a;
+  --surface: #0a102080;
+  --surface-2: #1428478f;
+  --surface-3: #1830598f;
+  --danger-soft: #ff6e8a29;
+  --ok: #4fe0b0;
+  --ok-soft: #4fe0b024;
+  --warn-soft: #ffd27a24;
+  --knob: #e8f1ff;
+  --track-off: #1e3a6b99;
+  --selected: #3a7bff26;
+  --scroll: #1e3a6b99;
+  --scroll-hover: #3a7bff73;
+  --font: var(--ff-prose);
+
+  background: #05070d;
+}
+
+/* 视频层在正层级起步（不复制上游 ff-lift 的负层级与延迟跳变） */
+html[data-whale-skin="whale-fantasy"] body {
+  background: transparent;
+  color: var(--text);
+  font-family: var(--ff-prose);
+}
+
+html[data-whale-skin="whale-fantasy"] ::selection {
+  background: #39ffd13d;
+  color: #ffffff;
+}
+
+/* 滚动条：上游最终级联是 `body * { scrollbar-color: #39ffd14d transparent }`。
+   实测（Electron 45 / Chromium）：标准 `scrollbar-color` 一旦不是 auto 就接管滚动容器，
+   `::-webkit-scrollbar-*` 被忽略，宽度回落到平台默认 **15px**（本客户端基线是 10px）。
+   按「保留合理滚动条几何」的要求，这里只用 WebKit 伪元素实现上游的同一青色，
+   保留 10px 宽 + 2px 内缩 + 6px 圆角滑块；不声明 `scrollbar-color`，
+   避免两套规则互相覆盖、也避免滚动条变宽挤占正文。
+   差异已记入 ATTRIBUTION.md「适配差异清单」。 */
+html[data-whale-skin="whale-fantasy"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html[data-whale-skin="whale-fantasy"] ::-webkit-scrollbar-thumb {
+  background: #39ffd14d;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+html[data-whale-skin="whale-fantasy"] ::-webkit-scrollbar-thumb:hover {
+  background: #39ffd1a6;
+  background-clip: padding-box;
+}
+html[data-whale-skin="whale-fantasy"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ══ 背景层（§3.1：原文件、原 scrim、无滤镜、无额外黑幕） ═══════════════ */
+html[data-whale-skin="whale-fantasy"] body > .whale-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+html[data-whale-skin="whale-fantasy"] .whale-bg > video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 1;
+  filter: none;
+}
+/* 唯一全窗遮罩：上游原值，不自行加重 */
+html[data-whale-skin="whale-fantasy"] .whale-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(5, 7, 13, 0) 0%,
+    rgba(5, 7, 13, 0) 86%,
+    rgba(5, 7, 13, 0.16) 96%,
+    rgba(5, 7, 13, 0.22) 100%);
+}
+
+/* 应用主体抬到背景之上。只认 .app，不给 body 直系裸 div 一概加层——
+   菜单 / 模态的门户自带 position:fixed，被改成 relative 会掉进文档流。 */
+html[data-whale-skin="whale-fantasy"] body > .app {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+}
+html[data-whale-skin="whale-fantasy"] :is(.main, .tx-wrap, .transcript) {
+  background: transparent;
+}
+
+/* ══ 4 · WB 空间布局 ════════════════════════════════════════════════════ */
+html[data-whale-skin="whale-fantasy"] .sidebar {
+  width: var(--wb-side-w);
+  flex: 0 0 var(--wb-side-w);
+}
+html[data-whale-skin="whale-fantasy"] .topbar {
+  height: var(--wb-header-h);
+  flex: 0 0 var(--wb-header-h);
+  padding: 0 var(--wb-gutter);
+}
+html[data-whale-skin="whale-fantasy"] :is(.inner, .composer-inner) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--wb-column-w);
+  margin-inline: auto;
+  padding-inline: var(--wb-gutter);
+}
+html[data-whale-skin="whale-fantasy"] .inner > .msg {
+  margin-inline: 16px;
+  min-width: 0;
+}
+/* 输入编辑区：初始与清空后 64px，上限仍 180（与 autoGrow 的 Math.min(180) 同步） */
+html[data-whale-skin="whale-fantasy"] .composer textarea {
+  min-height: 64px;
+  max-height: 180px;
+  font-size: 15px;
+  line-height: 1.75;
+  padding: 2px 4px;
+}
+
+/* ══ 5 · 原作组件视觉 ══════════════════════════════════════════════════ */
+
+/* 5.1 侧栏 = 驾驶舱左侧的仪表带：薄玻璃 + 右缘冷蓝线 + 7px 渐隐漏光 */
+html[data-whale-skin="whale-fantasy"] .sidebar {
+  position: relative;
+  background: var(--ff-glass);
+  border-right: 0;
+  box-shadow: inset -1px 0 0 var(--ff-edge-soft);
+}
+html[data-whale-skin="whale-fantasy"] .sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 7px;
+  height: 58%;
+  pointer-events: none;
+  background-image: linear-gradient(270deg, #39ffd180 0%, #3a7bff33 44%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #ffffffff 0%, #ffffff44 58%, #ffffff00 100%);
+  mask-image: linear-gradient(180deg, #ffffffff 0%, #ffffff44 58%, #ffffff00 100%);
+}
+html[data-whale-skin="whale-fantasy"] .sb-name {
+  font-family: var(--ff-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ff-ink);
+}
+html[data-whale-skin="whale-fantasy"] .sb-sub {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #39ffd1b8;
+}
+html[data-whale-skin="whale-fantasy"] .sb-logo {
+  border-radius: 8px;
+  background: #0a10208c;
+  box-shadow: inset 0 0 0 1px #3a7bff73, 0 0 14px #3a7bff33;
+}
+
+/* 5.2 新会话 = 全息接入板：低饱和全息底 + 四角青色括号 + 扫光 */
+html[data-whale-skin="whale-fantasy"] .sb-new {
+  position: relative;
+  overflow: hidden;
+  margin: 0 12px 10px;
+  border-radius: 8px;
+  border: 1px solid #3a7bff8c;
+  background-color: #0a10206b;
+  background-image: linear-gradient(180deg, #3a7bff4d 0%, #0a102075 46%, #39ffd124 100%);
+  color: #e8f1fffa;
+  box-shadow: 0 0 20px #3a7bff42, inset 0 1px 0 #39ffd166;
+  font-family: var(--ff-mono);
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+html[data-whale-skin="whale-fantasy"] .sb-new::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  background-image:
+    linear-gradient(#39ffd1bf, #39ffd1bf),
+    linear-gradient(#39ffd1bf, #39ffd1bf),
+    linear-gradient(#39ffd1bf, #39ffd1bf),
+    linear-gradient(#39ffd1bf, #39ffd1bf);
+  background-repeat: no-repeat;
+  background-size: 9px 1px, 1px 9px, 9px 1px, 1px 9px;
+  background-position: left top, left top, right bottom, right bottom;
+}
+html[data-whale-skin="whale-fantasy"] .sb-new:hover {
+  border-color: #39ffd1b3;
+  box-shadow: 0 0 26px #3a7bff5c, inset 0 1px 0 #39ffd1b3;
+  color: #fff;
+}
+
+/* 5.3 搜索框：冷蓝细边，聚焦转青 */
+html[data-whale-skin="whale-fantasy"] .sb-search input,
+html[data-whale-skin="whale-fantasy"] .set-search {
+  background: #0a10208c;
+  border: 1px solid #1e3a6b8c;
+  border-radius: 7px;
+  color: var(--ff-ink);
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+}
+html[data-whale-skin="whale-fantasy"] .sb-search input:focus,
+html[data-whale-skin="whale-fantasy"] .set-search:focus {
+  border-color: #39ffd1b3;
+  box-shadow: 0 0 0 3px #39ffd129;
+  outline: none;
+}
+html[data-whale-skin="whale-fantasy"] .sb-search input::placeholder,
+html[data-whale-skin="whale-fantasy"] .set-search::placeholder {
+  color: #8fa8cc;
+}
+
+/* 5.4 会话行：静息无底，悬停浮一档，选中给左缘 2px 青色记号 */
+html[data-whale-skin="whale-fantasy"] .sb-label,
+html[data-whale-skin="whale-fantasy"] .sb-group {
+  font-family: var(--ff-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: #39ffd1b8;
+}
+html[data-whale-skin="whale-fantasy"] .sb-item-row {
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #e8f1ffc7;
+  font-family: var(--ff-mono);
+  transition: background-color 0.13s ease, box-shadow 0.13s ease, border-color 0.13s ease;
+}
+html[data-whale-skin="whale-fantasy"] .sb-item-row:hover {
+  background: #3a7bff1a;
+  border-color: transparent;
+  color: #e8f1ffeb;
+}
+html[data-whale-skin="whale-fantasy"] .sb-item-row.on {
+  background: #3a7bff26;
+  border-color: #3a7bff47;
+  color: #e8f1fff5;
+  font-weight: 500;
+  box-shadow: inset 2px 0 0 var(--ff-cyan);
+}
+html[data-whale-skin="whale-fantasy"] .sb-item-row.on::before {
+  display: none; /* 上游用 inset 阴影画左缘记号，不再叠一条伪元素 */
+}
+html[data-whale-skin="whale-fantasy"] .sb-item-row .meta,
+html[data-whale-skin="whale-fantasy"] .sb-item-row .s {
+  color: #9ab1d2;
+  font-size: 10.5px;
+}
+html[data-whale-skin="whale-fantasy"] .sb-item-row.hit .s {
+  color: #ffd27a;
+}
+html[data-whale-skin="whale-fantasy"] .sb-acts button {
+  border-radius: 6px;
+  color: #9ab1d2;
+}
+html[data-whale-skin="whale-fantasy"] .sb-acts button:hover {
+  background: #3a7bff29;
+  color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .sb-acts button.danger:hover {
+  background: #ff6e8a24;
+  color: #ff6e8a;
+}
+html[data-whale-skin="whale-fantasy"] .rename {
+  background: #05070dcc;
+  border: 1px solid #39ffd1b3;
+  border-radius: 6px;
+  color: var(--ff-ink);
+  font-family: var(--ff-mono);
+}
+html[data-whale-skin="whale-fantasy"] .sb-empty {
+  color: #8fa8cc;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+}
+
+/* 5.5 侧栏底部入口：静息无底，悬停浮一档 */
+html[data-whale-skin="whale-fantasy"] .sb-foot {
+  border-top: 1px solid #1e3a6b52;
+  padding: 8px;
+}
+html[data-whale-skin="whale-fantasy"] .sb-nav {
+  border-radius: 7px;
+  color: #e8f1ffc7;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  transition: background-color 0.13s ease, color 0.13s ease, box-shadow 0.13s ease;
+}
+html[data-whale-skin="whale-fantasy"] .sb-nav:hover {
+  background: #3a7bff1f;
+  color: var(--ff-ink);
+  box-shadow: inset 2px 0 0 #39ffd1b3;
+}
+html[data-whale-skin="whale-fantasy"] .sb-nav .ico {
+  filter: grayscale(1) brightness(1.6);
+  opacity: 0.8;
+}
+
+/* 5.6 顶栏：一条带 HUD 底线的横带（只铺真实顶栏盒子，不染整列） */
+html[data-whale-skin="whale-fantasy"] .topbar {
+  background: var(--ff-glass-card);
+  border-bottom: 0;
+  box-shadow: inset 0 -1px 0 #1e3a6b8c;
+  --text-2: #b4c7e1;
+  --text-3: #9ab1d2;
+}
+html[data-whale-skin="whale-fantasy"] .topbar .t {
+  font-family: var(--ff-mono);
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ff-ink);
+}
+html[data-whale-skin="whale-fantasy"] .topbar .badge {
+  background: #3a7bff1f;
+  border: 1px solid #3a7bff4d;
+  border-radius: 999px;
+  color: #9fc3ff;
+  font-family: var(--ff-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+}
+html[data-whale-skin="whale-fantasy"] .topbar .hb {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid #1e3a6bb8;
+  background: #0a10208c;
+  color: #9ab1d2;
+  transition: border-color 0.13s ease, color 0.13s ease, background-color 0.13s ease;
+}
+html[data-whale-skin="whale-fantasy"] .topbar .hb:hover {
+  border-color: #39ffd18c;
+  background: #3a7bff29;
+  color: #39ffd1;
+}
+
+/* 5.7 会话正文：阅读面透明，文字自带单向柔光托底 */
+html[data-whale-skin="whale-fantasy"] .transcript {
+  text-shadow: 0 0 10px #05070deb, 0 0 24px #05070d9e;
+}
+html[data-whale-skin="whale-fantasy"] .msg {
+  border-radius: 9px;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body {
+  color: var(--ff-ink);
+  font-size: 15px;
+  line-height: 1.75;
+}
+/* 用户轮：外层是 message-row（9px + 左缘青线），内层是气泡（20px）——两层分别映射 */
+html[data-whale-skin="whale-fantasy"] .msg.user {
+  /* 外层 message-row：只留一道青线与极淡的冷蓝信号带（上游 0x1a）。
+     去掉顶部 inset 线，避免在明亮视频帧上读成一个「空盒子」。 */
+  border-radius: 9px;
+  background: #3a7bff1a;
+  box-shadow: inset 2px 0 0 #39ffd18c;
+  padding: 4px 0;
+}
+html[data-whale-skin="whale-fantasy"] .msg.user .body {
+  max-width: 78%;
+  /* 内气泡用皮肤的面板材质（上游 bubble 吃的是 bg-layer-2，不是外层 row 的淡蓝）。
+     若只给淡蓝，压在明亮视频帧上会整块消失，只剩一条空横带。 */
+  background: #142847d9;
+  border: 1px solid #1e3a6bcc;
+  border-radius: 20px;
+  padding: 10px 15px;
+  color: var(--ff-ink);
+  font-size: 15px;
+  line-height: 1.75;
+  box-shadow: inset 0 1px 0 #39ffd129;
+}
+html[data-whale-skin="whale-fantasy"] .msg.flash {
+  animation: whaleMsgFlash 1.25s ease;
+}
+@keyframes whaleMsgFlash {
+  0% { background: #39ffd133; box-shadow: 0 0 0 6px #39ffd11a; }
+  70% { background: #39ffd114; box-shadow: 0 0 0 2px #39ffd10d; }
+  100% { background: transparent; box-shadow: none; }
+}
+
+/* 5.8 行内代码与代码块 = 终端窗口（最终级联：左缘 2px 青线、8px 圆角、夜色底） */
+html[data-whale-skin="whale-fantasy"] .msg.ai .body code {
+  background: #05070dc7;
+  border: 1px solid #1e3a6b8c;
+  border-radius: 5px;
+  color: #9fe8d4;
+  font-family: var(--ff-mono);
+  font-size: 12.5px;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body pre,
+html[data-whale-skin="whale-fantasy"] .tool pre {
+  /* 上游为 #05070d9e；明亮视频帧下会把底色抬到中灰（实测 0.62 叠加后 ≈ RGB 100），
+     代码 token 对比不足。这里提高到 0xc7，仍能透出画面但保证可读（记为适配差异）。 */
+  background: #05070dc7;
+  border: 1px solid #1e3a6b8c;
+  border-left: 2px solid #39ffd18c;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 #39ffd138;
+  padding: 30px 14px 12px;
+  overflow: auto;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #cfe0f5;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body pre code,
+html[data-whale-skin="whale-fantasy"] .msg.ai .body pre code * {
+  font-family: var(--ff-mono);
+}
+
+/* 代码块工具条按钮（原为内联浅色，改由 class 承载） */
+html[data-whale-skin="whale-fantasy"] .code-btn {
+  font-family: var(--ff-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #1e3a6bb8;
+  background: #0a1020e0;
+  color: #9ab1d2;
+  cursor: pointer;
+  transition: border-color 0.13s ease, color 0.13s ease, background-color 0.13s ease;
+}
+html[data-whale-skin="whale-fantasy"] .code-btn:hover {
+  border-color: #39ffd18c;
+  background: #3a7bff29;
+  color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .code-btn.save {
+  color: #4fe0b0;
+}
+
+/* 5.9 表格：净化后的正文内局部横滚（不撑宽全窗） */
+html[data-whale-skin="whale-fantasy"] .whale-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0.6em 0;
+  border-radius: 8px;
+  /* 与代码块同一档底色：上游表格没有独立卡片，明亮帧下边框与表头会整块消失 */
+  background: #05070dc7;
+  border: 1px solid #1e3a6b8c;
+  box-shadow: inset 0 1px 0 #39ffd138;
+}
+html[data-whale-skin="whale-fantasy"] .whale-table-scroll:focus-visible {
+  outline: 2px solid #39ffd1a6;
+  outline-offset: 1px;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body table {
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 13px;
+  width: auto;
+  font-family: var(--ff-mono);
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body th,
+html[data-whale-skin="whale-fantasy"] .msg.ai .body td {
+  border: 1px solid #1e3a6b99;
+  padding: 6px 11px;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body th {
+  background: #142847d9;
+  color: var(--ff-ink);
+  font-weight: 600;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body blockquote {
+  border-left: 3px solid #1e3a6bcc;
+  color: #b4c7e1;
+}
+/* 链接：上游最终级联是 `body a { color: #39FFD1 }`（默认青，不是蓝色再 hover 转青） */
+html[data-whale-skin="whale-fantasy"] a {
+  color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] a:hover {
+  color: #7affe0;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body a {
+  color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body a:hover {
+  color: #7affe0;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body img {
+  border-radius: 8px;
+  border: 1px solid #1e3a6b8c;
+}
+html[data-whale-skin="whale-fantasy"] .msg.ai .body hr {
+  border: 0;
+  border-top: 1px solid #1e3a6b73;
+}
+
+/* 5.10 推理块 / 工具行：家具面，给纸的边而不是墨的重 */
+html[data-whale-skin="whale-fantasy"] .think {
+  background: #0a1020a6;
+  border: 1px solid #1e3a6b73;
+  border-radius: 10px;
+}
+html[data-whale-skin="whale-fantasy"] .think summary {
+  color: #b4c7e1;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+}
+html[data-whale-skin="whale-fantasy"] .think summary .dot {
+  background: #39ffd1b3;
+}
+html[data-whale-skin="whale-fantasy"] .think .body,
+html[data-whale-skin="whale-fantasy"] .think pre {
+  color: #b4c7e1;
+}
+html[data-whale-skin="whale-fantasy"] .tool {
+  background: #0a10208c;
+  border: 1px solid #1e3a6b73;
+  border-radius: 10px;
+}
+html[data-whale-skin="whale-fantasy"] .tool summary {
+  color: #b4c7e1;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+}
+html[data-whale-skin="whale-fantasy"] .tool .k {
+  color: var(--ff-ink);
+}
+html[data-whale-skin="whale-fantasy"] .tool .v {
+  color: #9ab1d2;
+}
+
+/* 5.11 输入卡 = HUD 面板：透明底 + 电光蓝细边 + 顶部亮线 + 聚焦柔环 */
+html[data-whale-skin="whale-fantasy"] .composer-wrap {
+  /* 清掉基础样式里 26% 起变成实色的渐变——否则视频下半部被吞掉 */
+  background: transparent;
+}
+html[data-whale-skin="whale-fantasy"] .composer {
+  border: 1px solid #3a7bff6b;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: inset 0 1px 0 #3a7bff75, 0 0 22px #3a7bff24;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+html[data-whale-skin="whale-fantasy"] .composer:focus-within {
+  border-color: #39ffd1b3;
+  box-shadow: inset 0 1px 0 #39ffd18c, 0 0 0 4px #39ffd121, 0 0 26px #39ffd138;
+}
+html[data-whale-skin="whale-fantasy"] .composer textarea,
+html[data-whale-skin="whale-fantasy"] .composer .cbtn,
+html[data-whale-skin="whale-fantasy"] .composer .send {
+  text-shadow: 0 0 10px #05070de6, 0 0 22px #05070d99;
+}
+html[data-whale-skin="whale-fantasy"] .composer textarea {
+  color: var(--ff-ink);
+  caret-color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .composer textarea::placeholder {
+  color: #bccde6;
+  -webkit-text-fill-color: #bccde6;
+  letter-spacing: 0.02em;
+}
+
+/* 5.12 卡内下拉药丸：统一成胶囊，等宽小字 */
+html[data-whale-skin="whale-fantasy"] .cbtn {
+  border-radius: 999px;
+  border: 1px solid #1e3a6b8c;
+  background: #1428478c;
+  color: #b4c7e1;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  transition: border-color 0.13s ease, background-color 0.13s ease, color 0.13s ease;
+}
+html[data-whale-skin="whale-fantasy"] .cbtn:hover {
+  border-color: #39ffd157;
+  background: #39ffd121;
+  color: #e8f1ffeb;
+}
+html[data-whale-skin="whale-fantasy"] .cbtn[aria-expanded="true"] {
+  border-color: #39ffd1b3;
+  background: #3a7bff33;
+  color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .cbtn .mp-name {
+  max-width: 210px;
+}
+/* 加号是「接入」，给一档青边而不是主操作的实心 */
+html[data-whale-skin="whale-fantasy"] #btnAttach {
+  border-radius: 9px;
+  border: 1px solid #39ffd173;
+  background: #0a10208c;
+  color: #39ffd1eb;
+  box-shadow: inset 0 1px 0 #39ffd14d;
+}
+html[data-whale-skin="whale-fantasy"] #btnAttach:hover {
+  border-color: #39ffd1d9;
+  background: #3a7bff33;
+}
+html[data-whale-skin="whale-fantasy"] #btnModel.is-open {
+  background: #1428478c;
+  border-color: #39ffd157;
+  color: #e8f1ffeb;
+}
+
+/* 5.13 发送键 = 发射键（上游 patches.css 832-870 的最终级联）
+   9px 方角 + 品牌蓝竖向渐变 + 青边光晕；hover 换成蓝→青渐变。
+   只映射真实发送按钮 #btnSend 的发送态，显式排除 .stop——上游用的是
+   `button:not([aria-haspopup])` 这类排除法，直接搬过来会误伤附件、语音、连接器。
+   尺寸仍保留客户端既有的 32px，不照搬原作布局。 */
+html[data-whale-skin="whale-fantasy"] #btnSend:not(.stop) {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid #3a7bff99;
+  background-color: #3a7bff;
+  background-image: linear-gradient(180deg, #3a7bfff0 0%, #679aff 100%);
+  color: #e8f1fffc;
+  box-shadow: 0 0 0 1px #39ffd173, inset 0 1px 0 #39ffd18c, 0 0 18px #3a7bff73;
+  transition: box-shadow 0.16s ease, filter 0.16s ease;
+}
+html[data-whale-skin="whale-fantasy"] #btnSend:not(.stop):hover:not(:disabled) {
+  background-image: linear-gradient(180deg, #679aff 0%, #39ffd18c 100%);
+  box-shadow: 0 0 0 1px #39ffd1d9, inset 0 1px 0 #39ffd1cc, 0 0 26px #39ffd173;
+}
+html[data-whale-skin="whale-fantasy"] #btnSend:not(.stop) svg {
+  filter: drop-shadow(0 0 6px #39ffd199);
+}
+/* 禁用态（输入框还空着）：退成一根细线圈 + 暗青箭头 —— 「还没画完」是线，可以按了才是实心 */
+html[data-whale-skin="whale-fantasy"] #btnSend:disabled:not(.stop) {
+  background-image: none;
+  background-color: transparent;
+  border: 1px solid #1e3a6b99;
+  color: #39ffd16b;
+  box-shadow: none;
+}
+html[data-whale-skin="whale-fantasy"] #btnSend:disabled:not(.stop) svg {
+  filter: none;
+}
+/* 停止态：独立且确定获胜。必须清掉发送态的渐变与蓝色光晕，
+   否则 .send:hover:not(:disabled) 会在 hover 时把停止键重新变蓝（原复核清单第 3 项）。 */
+html[data-whale-skin="whale-fantasy"] #btnSend.stop,
+html[data-whale-skin="whale-fantasy"] #btnSend.stop:hover,
+html[data-whale-skin="whale-fantasy"] #btnSend.stop:focus,
+html[data-whale-skin="whale-fantasy"] #btnSend.stop:focus-visible {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid #ff6e8a;
+  background-color: #ff6e8a;
+  background-image: none;
+  color: #ffffff;
+  box-shadow: 0 0 0 1px #ff6e8a4d, inset 0 1px 0 #ff9db2, 0 0 18px #ff6e8a4d;
+}
+html[data-whale-skin="whale-fantasy"] #btnSend.stop svg {
+  filter: drop-shadow(0 0 6px #ff6e8a99);
+}
+
+/* 5.14 语音：录音态保留危险语义，不青色化 */
+html[data-whale-skin="whale-fantasy"] .cbtn.mic.rec,
+html[data-whale-skin="whale-fantasy"] .cbtn.mic-stop {
+  background: #ff6e8a24;
+  border-color: #ff6e8a80;
+  color: #ff9db2;
+}
+html[data-whale-skin="whale-fantasy"] .cbtn.mic::after {
+  background: #0a1020f0;
+  color: #e8f1fff5;
+  border: 1px solid #39ffd16b;
+  border-radius: 8px;
+  font-family: var(--ff-mono);
+  box-shadow: 0 10px 26px #05070db8, inset 0 1px 0 #39ffd159;
+}
+html[data-whale-skin="whale-fantasy"] .mic-state {
+  background: #ff6e8a24;
+  border: 1px solid #ff6e8a66;
+  color: #ff9db2;
+  font-family: var(--ff-mono);
+}
+html[data-whale-skin="whale-fantasy"] .mic-state.busy {
+  background: #1428478f;
+  border-color: #1e3a6b8c;
+  color: #9ab1d2;
+}
+
+/* 5.15 状态栏：HUD 读数条，等宽 + 表格数字 */
+html[data-whale-skin="whale-fantasy"] .statusbar {
+  color: #8fa8cc;
+  font-family: var(--ff-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+}
+html[data-whale-skin="whale-fantasy"] .statusbar .s + .s::before {
+  background: #1e3a6b73;
+}
+html[data-whale-skin="whale-fantasy"] .statusbar .s.num {
+  color: #b4c7e1;
+}
+html[data-whale-skin="whale-fantasy"] .statusbar .s.act {
+  background: #1428478f;
+  border: 1px solid #1e3a6b73;
+  color: #b4c7e1;
+}
+html[data-whale-skin="whale-fantasy"] .statusbar .s.act:hover {
+  background: #1830598f;
+}
+html[data-whale-skin="whale-fantasy"] .statusbar .s:hover {
+  background: #3a7bff1a;
+  color: #e8f1ffeb;
+}
+
+/* 5.16 回到底部 / 会话刻度：浮层走夜色玻璃 */
+html[data-whale-skin="whale-fantasy"] .jump-bottom {
+  border: 1px solid #1e3a6bcc;
+  background: #0a1020f0;
+  color: #9ab1d2;
+  box-shadow: 0 10px 26px #05070db8, inset 0 1px 0 #39ffd159;
+}
+html[data-whale-skin="whale-fantasy"] .jump-bottom:hover {
+  border-color: #39ffd18c;
+  color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .peek {
+  background: #0a1020eb;
+  border-left: 1px solid #1e3a6b8c;
+  box-shadow: -18px 0 40px #05070d99;
+}
+html[data-whale-skin="whale-fantasy"] .peek-rail {
+  background: #1e3a6b52;
+}
+html[data-whale-skin="whale-fantasy"] .pk-row {
+  color: #b4c7e1;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  border-radius: 6px;
+}
+html[data-whale-skin="whale-fantasy"] .pk-row:hover {
+  background: #3a7bff1f;
+  color: #e8f1ffeb;
+}
+html[data-whale-skin="whale-fantasy"] .pk-row:hover .pk-tick {
+  background: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .pk-empty {
+  color: #8fa8cc;
+}
+
+/* 5.17 附件条：小 HUD 板 */
+html[data-whale-skin="whale-fantasy"] .attach-strip .att,
+html[data-whale-skin="whale-fantasy"] .attach-strip > * {
+  background: #0a102085;
+  border: 1px solid #1e3a6bb8;
+  border-left: 2px solid #39ffd18c;
+  border-radius: 9px;
+  color: #b4c7e1;
+  font-family: var(--ff-mono);
+}
+
+/* ══ 6 · 状态与焦点 ════════════════════════════════════════════════════ */
+html[data-whale-skin="whale-fantasy"] :focus-visible {
+  outline: 2px solid #39ffd1a6;
+  outline-offset: 1px;
+}
+html[data-whale-skin="whale-fantasy"] .cbtn:focus-visible {
+  outline: none;
+  border-color: #39ffd1b3;
+  box-shadow: 0 0 0 3px #39ffd121;
+}
+html[data-whale-skin="whale-fantasy"] button:disabled {
+  cursor: default;
+}
+html[data-whale-skin="whale-fantasy"] .sect-sub,
+html[data-whale-skin="whale-fantasy"] .note {
+  color: #8fa8cc;
+}
+
+/* ══ 7 · body 门户：模态 / 菜单 / tooltip / toast ═══════════════════════ */
+html[data-whale-skin="whale-fantasy"] .modal {
+  background: rgba(5, 7, 13, 0.55);
+}
+html[data-whale-skin="whale-fantasy"] .card {
+  background: #0a1020f0;
+  border: 1px solid #1e3a6bcc;
+  border-radius: 10px;
+  box-shadow: 0 14px 44px #05070db8, inset 0 1px 0 #39ffd159;
+  color: var(--ff-ink);
+}
+html[data-whale-skin="whale-fantasy"] .card h3 {
+  font-family: var(--ff-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+html[data-whale-skin="whale-fantasy"] .fld label {
+  color: #b4c7e1;
+  font-size: 12.5px;
+}
+html[data-whale-skin="whale-fantasy"] .fld input,
+html[data-whale-skin="whale-fantasy"] .fld select,
+html[data-whale-skin="whale-fantasy"] .fld textarea {
+  background: #05070d8c;
+  border: 1px solid #1e3a6b8c;
+  border-radius: 7px;
+  color: var(--ff-ink);
+  font-family: var(--ff-mono);
+  font-size: 12.5px;
+}
+html[data-whale-skin="whale-fantasy"] .fld input:focus,
+html[data-whale-skin="whale-fantasy"] .fld select:focus,
+html[data-whale-skin="whale-fantasy"] .fld textarea:focus {
+  border-color: #39ffd1b3;
+  box-shadow: 0 0 0 3px #39ffd129;
+}
+html[data-whale-skin="whale-fantasy"] .fld select option {
+  background: #0a1020;
+  color: #e8f1ff;
+}
+html[data-whale-skin="whale-fantasy"] .cn-card {
+  background: #0a1020f0;
+  border: 1px solid #1e3a6bcc;
+  border-radius: 10px;
+  box-shadow: 0 14px 44px #05070db8, inset 0 1px 0 #39ffd159;
+}
+
+/* 弹出菜单 / 列表：品牌细边 + 四角青括号 + 顶上亮线（最终级联 10px） */
+html[data-whale-skin="whale-fantasy"] :is(.menu, .pop, .mswitch, .rs-pop, .rs-models, .cn-list) {
+  border-radius: 10px;
+}
+html[data-whale-skin="whale-fantasy"] :is(.menu, .pop) {
+  background: #0a1020f0;
+  border: 1px solid #3a7bff73;
+  box-shadow: 0 14px 44px #05070db8, inset 0 1px 0 #39ffd159;
+  font-family: var(--ff-mono);
+}
+html[data-whale-skin="whale-fantasy"] :is(.menu, .pop) > * {
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+}
+html[data-whale-skin="whale-fantasy"] :is(.menu, .pop) [class*="item"]:hover,
+html[data-whale-skin="whale-fantasy"] :is(.menu, .pop) .on {
+  background: #3a7bff29;
+  box-shadow: inset 2px 0 0 #39ffd1bf;
+}
+
+html[data-whale-skin="whale-fantasy"] #toast,
+html[data-whale-skin="whale-fantasy"] .whale-toast {
+  background: #0a1020f0 !important;
+  color: #e8f1fff5 !important;
+  border: 1px solid #39ffd16b;
+  border-radius: 8px;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 26px #05070db8, inset 0 1px 0 #39ffd159;
+}
+
+/* ══ 8 · 客户端专有控件 ════════════════════════════════════════════════ */
+
+/* 8.1 推理滑块：浮层挂在 body，元素自带 --rs-* 局部变量（根变量覆盖不到） */
+html[data-whale-skin="whale-fantasy"] :is(.rs-scope, .rs-pop, .rs-tip, .rs-models) {
+  --rs-card: #0a1020f0;
+  --rs-panel: #0a1020f0;
+  --rs-line: #3a7bff73;
+  --rs-accent: #3a7bff;
+  --rs-accent-dim: #679aff;
+  --rs-row: #e8f1ff;
+  --rs-sub: #8fa8cc;
+  --rs-sub-hover: #e8f1ff;
+  --rs-icon: #39ffd1;
+  --rs-dim: #9ab1d2;
+  --rs-track: #1e3a6b73;
+  --rs-dot: #8fa8cc;
+  --rs-knob: #e8f1ff;
+  --rs-row-hover: #3a7bff29;
+  --rs-tip: #0a1020f0;
+  --rs-tip-text: #e8f1ff;
+  --rs-shadow: 0 14px 44px #05070db8, inset 0 1px 0 #39ffd159;
+}
+
+/* 8.2 设置弹窗：WB 规格外壳 + 原作卡片材质 */
+html[data-whale-skin="whale-fantasy"] .set-modal .set-card {
+  width: min(880px, 92vw);
+  height: min(720px, 88vh);
+  max-width: 92vw;
+  max-height: 88vh;
+  border-radius: 24px;
+  background: #0a1020f7;
+  border: 1px solid #1e3a6bcc;
+  box-shadow: 0 22px 60px #05070dc7, inset 0 1px 0 #39ffd14d;
+}
+html[data-whale-skin="whale-fantasy"] .set-side {
+  width: 200px;
+  flex: 0 0 200px;
+  background: #0a102080;
+  border-right: 1px solid #1e3a6b8c;
+}
+html[data-whale-skin="whale-fantasy"] .set-brand {
+  font-family: var(--ff-mono);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #39ffd1c4;
+}
+html[data-whale-skin="whale-fantasy"] .set-nav-g {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: #39ffd199;
+}
+html[data-whale-skin="whale-fantasy"] .set-nav-i {
+  border-radius: 7px;
+  border: 1px solid transparent;
+  color: #e8f1ffc7;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  transition: background-color 0.13s ease, border-color 0.13s ease, box-shadow 0.13s ease;
+}
+html[data-whale-skin="whale-fantasy"] .set-nav-i:hover {
+  background: #3a7bff1a;
+  color: #e8f1ffeb;
+}
+html[data-whale-skin="whale-fantasy"] .set-nav-i.on {
+  background: #3a7bff26;
+  border-color: #3a7bff47;
+  color: #e8f1fff5;
+  font-weight: 500;
+  box-shadow: inset 2px 0 0 var(--ff-cyan);
+}
+html[data-whale-skin="whale-fantasy"] .set-nav-i .set-badge {
+  background: #ff6e8a24;
+  color: #ff9db2;
+  font-family: var(--ff-mono);
+}
+html[data-whale-skin="whale-fantasy"] .set-side-foot {
+  border-top: 1px solid #1e3a6b52;
+  color: #8fa8cc;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+html[data-whale-skin="whale-fantasy"] .set-main {
+  background: transparent;
+}
+html[data-whale-skin="whale-fantasy"] .set-main-head h2 {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  font-family: var(--ff-mono);
+  letter-spacing: 0.04em;
+  color: var(--ff-ink);
+}
+html[data-whale-skin="whale-fantasy"] .set-main-head p {
+  font-size: 12px;
+  color: #8fa8cc;
+}
+html[data-whale-skin="whale-fantasy"] .set-close {
+  border: 1px solid #1e3a6bb8;
+  background: #0a10208c;
+  border-radius: 7px;
+  color: #9ab1d2;
+}
+html[data-whale-skin="whale-fantasy"] .set-close:hover {
+  border-color: #39ffd18c;
+  color: #39ffd1;
+}
+/* 容器查询：按 .set-body 扣除 padding 后的内容宽度判断，不按整窗 */
+html[data-whale-skin="whale-fantasy"] .set-body {
+  container-type: inline-size;
+}
+html[data-whale-skin="whale-fantasy"] .set-page[hidden] {
+  display: none;
+}
+/* 设置卡：夜色玻璃 + 1px 冷蓝线 + 顶上一条青亮线（映射上游 settings-row） */
+html[data-whale-skin="whale-fantasy"] .set-page .sect {
+  padding: 14px 16px 6px;
+  margin-bottom: 12px;
+  border: 1px solid #1e3a6b8c;
+  border-bottom: 1px solid #1e3a6b8c;
+  border-radius: 10px;
+  background-color: #0a10206b;
+  background-image: linear-gradient(180deg, #14284747 0%, #05070d57 100%);
+  box-shadow: inset 0 1px 0 #39ffd14d;
+}
+html[data-whale-skin="whale-fantasy"] .set-page .sect:last-child {
+  margin-bottom: 0;
+}
+html[data-whale-skin="whale-fantasy"] .set-page .sect-t {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ff-ink);
+}
+html[data-whale-skin="whale-fantasy"] .set-page .sect-sub {
+  font-family: var(--ff-prose);
+  font-size: 11.5px;
+  color: #8fa8cc;
+}
+html[data-whale-skin="whale-fantasy"] .set-page .fld {
+  border-top: 1px solid #1e3a6b52;
+  padding: 12px 0;
+  gap: 12px 16px;
+}
+html[data-whale-skin="whale-fantasy"] .set-page .fld > label {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: #dbe8fa;
+  padding-top: 6px;
+}
+html[data-whale-skin="whale-fantasy"] .set-page .fld .note {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  color: #8fa8cc;
+}
+html[data-whale-skin="whale-fantasy"] .set-page .fld input[type="text"],
+html[data-whale-skin="whale-fantasy"] .set-page .fld input[type="number"],
+html[data-whale-skin="whale-fantasy"] .set-page .fld input[type="password"],
+html[data-whale-skin="whale-fantasy"] .set-page .fld select,
+html[data-whale-skin="whale-fantasy"] .set-page .fld textarea {
+  background: #05070d8c;
+  border: 1px solid #1e3a6b8c;
+  border-radius: 7px;
+  color: var(--ff-ink);
+  font-family: var(--ff-mono);
+  font-size: 12.5px;
+}
+html[data-whale-skin="whale-fantasy"] .set-page .fld input:focus,
+html[data-whale-skin="whale-fantasy"] .set-page .fld select:focus,
+html[data-whale-skin="whale-fantasy"] .set-page .fld textarea:focus {
+  border-color: #39ffd1b3;
+  box-shadow: 0 0 0 3px #39ffd129;
+  outline: none;
+}
+html[data-whale-skin="whale-fantasy"] .set-page .fld select option {
+  background: #0a1020;
+  color: #e8f1ff;
+}
+html[data-whale-skin="whale-fantasy"] .set-page .fld input[type="checkbox"] {
+  accent-color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .set-page button,
+html[data-whale-skin="whale-fantasy"] .set-foot button {
+  border: 1px solid #1e3a6bb8;
+  border-radius: 6px;
+  background: #0a10206b;
+  color: #e8f1ffd1;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  transition: border-color 0.13s ease, color 0.13s ease, background-color 0.13s ease;
+}
+html[data-whale-skin="whale-fantasy"] .set-page button:hover,
+html[data-whale-skin="whale-fantasy"] .set-foot button:hover {
+  border-color: #39ffd18c;
+  background: #3a7bff29;
+  color: #39ffd1eb;
+}
+html[data-whale-skin="whale-fantasy"] .set-foot {
+  border-top: 1px solid #1e3a6b8c;
+  background: #0a102080;
+}
+html[data-whale-skin="whale-fantasy"] .set-foot .primary {
+  background: #3a7bff;
+  border-color: #3a7bff;
+  color: #ffffff;
+}
+html[data-whale-skin="whale-fantasy"] .set-foot .primary:hover {
+  background: #528bff;
+  border-color: #528bff;
+  color: #ffffff;
+}
+html[data-whale-skin="whale-fantasy"] .set-foot-note {
+  color: #8fa8cc;
+  font-family: var(--ff-mono);
+  font-size: 10.5px;
+}
+
+/* 8.3 提供商卡：复杂提供商整行（文档 §2.2），否则名称会被右侧徽标与操作挤成省略号 */
+html[data-whale-skin="whale-fantasy"] .set-page .fld:has(.prov-card) {
+  grid-template-columns: minmax(0, 1fr);
+}
+html[data-whale-skin="whale-fantasy"] .set-page .fld:has(.prov-card) > * {
+  grid-column: 1;
+}
+html[data-whale-skin="whale-fantasy"] .set-page .fld:has(.prov-card) > label {
+  padding-top: 0;
+}
+html[data-whale-skin="whale-fantasy"] .prov-card {
+  background: #0a10206b;
+  border: 1px solid #1e3a6b8c;
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 #39ffd138;
+}
+html[data-whale-skin="whale-fantasy"] .prov-card.on {
+  border-color: #3a7bff73;
+  box-shadow: inset 2px 0 0 #39ffd1b3, inset 0 1px 0 #39ffd159;
+}
+html[data-whale-skin="whale-fantasy"] .prov-card .p-name {
+  color: var(--ff-ink);
+  font-family: var(--ff-mono);
+}
+html[data-whale-skin="whale-fantasy"] .prov-card :is(.p-base, .p-key, .p-proto) {
+  color: #8fa8cc;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+}
+html[data-whale-skin="whale-fantasy"] .prov-name {
+  font-family: var(--ff-mono);
+  font-size: 12.5px;
+  color: var(--ff-ink);
+}
+html[data-whale-skin="whale-fantasy"] .prov-kind,
+html[data-whale-skin="whale-fantasy"] .prov-mcnt {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  color: #8fa8cc;
+  border-color: #1e3a6b8c;
+}
+html[data-whale-skin="whale-fantasy"] .prov-tag {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  color: #9ab1d2;
+  border: 1px solid #1e3a6b8c;
+  background: #0a10208c;
+}
+html[data-whale-skin="whale-fantasy"] .prov-tag.active {
+  color: #39ffd1;
+  border-color: #39ffd157;
+  background: #39ffd121;
+}
+html[data-whale-skin="whale-fantasy"] .prov-act {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: #9ab1d2;
+  border-radius: 5px;
+}
+html[data-whale-skin="whale-fantasy"] .prov-act:hover {
+  background: #3a7bff29;
+  color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .prov-act.del {
+  color: #ff6e8a;
+}
+html[data-whale-skin="whale-fantasy"] .prov-act.del:hover {
+  background: #ff6e8a24;
+  color: #ff9db2;
+}
+html[data-whale-skin="whale-fantasy"] .prov-dot {
+  background: #1e3a6bcc;
+}
+html[data-whale-skin="whale-fantasy"] .prov-dot.on {
+  background: #4fe0b0;
+  box-shadow: 0 0 8px #4fe0b080;
+}
+html[data-whale-skin="whale-fantasy"] .prov-dot.off {
+  background: #ff6e8a;
+}
+html[data-whale-skin="whale-fantasy"] .prov-body {
+  border-top: 1px solid #1e3a6b52;
+}
+html[data-whale-skin="whale-fantasy"] .prov-card.active {
+  border-color: #3a7bff73;
+  box-shadow: 0 0 0 3px #3a7bff1f;
+}
+html[data-whale-skin="whale-fantasy"] .prov-empty {
+  color: #8fa8cc;
+  border: 1px dashed #1e3a6bcc;
+  border-radius: 10px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+}
+
+/* 8.4 自检 / 诊断表：读数板 */
+html[data-whale-skin="whale-fantasy"] #selfcheckBox,
+html[data-whale-skin="whale-fantasy"] #engineAliasBox,
+html[data-whale-skin="whale-fantasy"] #agentCapsBox {
+  border-color: #1e3a6b8c !important;
+  background: #05070d8c;
+  border-radius: 8px !important;
+  font-family: var(--ff-mono);
+  font-size: 11px !important;
+  line-height: 1.9 !important;
+}
+html[data-whale-skin="whale-fantasy"] #selfcheckBox .sc-row,
+html[data-whale-skin="whale-fantasy"] #selfcheckBox > div {
+  border-color: #1e3a6b52 !important;
+}
+
+/* 8.5 代码高亮：上游没有为本客户端 hljs 类提供一对一映射，
+      这里按皮肤语言逐类建立（记录为适配项，不称上游原版） */
+html[data-whale-skin="whale-fantasy"] .hljs {
+  color: #cfe0f5;
+  background: transparent;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-comment,
+html[data-whale-skin="whale-fantasy"] .hljs-quote {
+  color: #6f87a8;
+  font-style: italic;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-keyword,
+html[data-whale-skin="whale-fantasy"] .hljs-selector-tag,
+html[data-whale-skin="whale-fantasy"] .hljs-type,
+html[data-whale-skin="whale-fantasy"] .hljs-meta-keyword {
+  color: #679aff;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-string,
+html[data-whale-skin="whale-fantasy"] .hljs-doctag,
+html[data-whale-skin="whale-fantasy"] .hljs-regexp,
+html[data-whale-skin="whale-fantasy"] .hljs-meta-string {
+  color: #7ee0c0;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-number,
+html[data-whale-skin="whale-fantasy"] .hljs-literal,
+html[data-whale-skin="whale-fantasy"] .hljs-variable,
+html[data-whale-skin="whale-fantasy"] .hljs-template-variable,
+html[data-whale-skin="whale-fantasy"] .hljs-symbol,
+html[data-whale-skin="whale-fantasy"] .hljs-bullet {
+  color: #ffd27a;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-title,
+html[data-whale-skin="whale-fantasy"] .hljs-section,
+html[data-whale-skin="whale-fantasy"] .hljs-selector-id {
+  color: #9fc3ff;
+  font-weight: 600;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-attr,
+html[data-whale-skin="whale-fantasy"] .hljs-attribute,
+html[data-whale-skin="whale-fantasy"] .hljs-selector-attr,
+html[data-whale-skin="whale-fantasy"] .hljs-selector-class,
+html[data-whale-skin="whale-fantasy"] .hljs-selector-pseudo {
+  color: #9ab1d2;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-built_in,
+html[data-whale-skin="whale-fantasy"] .hljs-builtin-name,
+html[data-whale-skin="whale-fantasy"] .hljs-class .hljs-title {
+  color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-name,
+html[data-whale-skin="whale-fantasy"] .hljs-tag {
+  color: #679aff;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-meta {
+  color: #6f87a8;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-params {
+  color: #cfe0f5;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-addition {
+  color: #4fe0b0;
+  background: #4fe0b020;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-deletion {
+  color: #ff6e8a;
+  background: #ff6e8a20;
+}
+html[data-whale-skin="whale-fantasy"] .hljs-link {
+  color: #39ffd1;
+  text-decoration: underline;
+}
+
+
+/* 8.6 语义状态色与次级面板：基础样式里这些颜色是写死的浅色语义值
+      （danger #b42318 / warn #8a5a00 / info #4658d6 / 中性 #4a4f5c），
+      在夜色玻璃上不可读。统一改到皮肤的语义档位，保留「错误仍是错误」的语义。 */
+html[data-whale-skin="whale-fantasy"] :is(
+  .ma-model .act.sw, .ma-badge.sw, .ma-badge.err, .lg-m.act,
+  .statusbar .s.act.sw, .statusbar .s.sbx.lv-danger,
+  .sbx-card .v.bad, .sbx-tag.risk, .sbx-bar .risk,
+  .cn-health.fail, .cn-oauth.cancel, .prov-models-hd .lk.danger
+) {
+  color: #ff6e8a;
+}
+html[data-whale-skin="whale-fantasy"] :is(.ma-badge.sw, .ma-badge.err, .sbx-tag.risk) {
+  background: #ff6e8a24;
+  border: 1px solid #ff6e8a4d;
+}
+html[data-whale-skin="whale-fantasy"] :is(.ma-toolbar button, .lg-tag, .cn-check, .cmdk .ck-item) {
+  color: #b4c7e1;
+}
+html[data-whale-skin="whale-fantasy"] .cmdk .ck-item {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+}
+html[data-whale-skin="whale-fantasy"] .lg-tag {
+  background: #1428478f;
+  color: #9ab1d2;
+  border-radius: 5px;
+}
+html[data-whale-skin="whale-fantasy"] .cn-health.wait {
+  background: #3a7bff29;
+  color: #9fc3ff;
+}
+html[data-whale-skin="whale-fantasy"] .cn-health.fail {
+  background: #ff6e8a24;
+}
+html[data-whale-skin="whale-fantasy"] .wait-hint {
+  color: #ffd27a;
+}
+html[data-whale-skin="whale-fantasy"] .cn-note-oauth {
+  color: #ffd27a;
+  background: #ffd27a1f;
+  border-color: #ffd27a4d;
+}
+html[data-whale-skin="whale-fantasy"] .sbx-card .v.ok {
+  color: #4fe0b0;
+}
+html[data-whale-skin="whale-fantasy"] .sbx-card .v.warn {
+  color: #ffd27a;
+}
+html[data-whale-skin="whale-fantasy"] .cn-oauth {
+  border: 1px solid #1e3a6bb8;
+  background: #3a7bff29;
+  color: #9fc3ff;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+}
+html[data-whale-skin="whale-fantasy"] .cn-oauth.cancel {
+  border-color: #ff6e8a4d;
+  background: #ff6e8a1f;
+}
+html[data-whale-skin="whale-fantasy"] .cn-cat {
+  border: 1px solid #1e3a6b8c;
+  background: #0a10208c;
+  color: #9ab1d2;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+}
+html[data-whale-skin="whale-fantasy"] .cn-cat:hover {
+  border-color: #39ffd18c;
+  color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .cn-cat.on {
+  background: #3a7bff;
+  border-color: #3a7bff;
+  color: #ffffff;
+}
+html[data-whale-skin="whale-fantasy"] .ma-entry:hover {
+  border-color: #39ffd18c;
+  background: #3a7bff1f;
+}
+html[data-whale-skin="whale-fantasy"] .ma-toolbar button:hover {
+  background: #3a7bff1f;
+  border-color: #39ffd18c;
+  color: #39ffd1;
+}
+html[data-whale-skin="whale-fantasy"] .lg-row:hover {
+  border-color: #39ffd18c;
+  box-shadow: 0 2px 8px #05070d80;
+}
+html[data-whale-skin="whale-fantasy"] .lg-row.open {
+  border-color: #3a7bff73;
+  box-shadow: 0 2px 12px #05070d99;
+}
+html[data-whale-skin="whale-fantasy"] .cn-search input {
+  background: #05070d8c;
+  border: 1px solid #1e3a6b8c;
+  border-radius: 7px;
+  color: var(--ff-ink);
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+}
+html[data-whale-skin="whale-fantasy"] .cn-search input:focus {
+  border-color: #39ffd1b3;
+  box-shadow: 0 0 0 3px #39ffd129;
+}
+
+/* ══ 9 · 窄窗 / 容器查询 / reduced-motion ══════════════════════════════ */
+
+/* 设置表单：按正文可用宽塌成单列（替换旧 940px 整窗断点） */
+@container (max-width: 620px) {
+  html[data-whale-skin="whale-fantasy"] .set-page .fld {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  html[data-whale-skin="whale-fantasy"] .set-page .fld > *:not(label) {
+    grid-column: 1;
+  }
+  html[data-whale-skin="whale-fantasy"] .set-page .fld > label {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  html[data-whale-skin="whale-fantasy"] {
+    --wb-side-w: 240px;
+  }
+}
+@media (min-width: 1681px) {
+  html[data-whale-skin="whale-fantasy"] {
+    --wb-column-w: 1008px;
+  }
+}
+
+/* 窄窗：隐藏左栏时必须给出分类入口与搜索替代（紧凑栏由页面新增） */
+@media (max-width: 760px) {
+  html[data-whale-skin="whale-fantasy"] .set-compact {
+    display: flex;
+  }
+  html[data-whale-skin="whale-fantasy"] .set-side {
+    display: none;
+  }
+  html[data-whale-skin="whale-fantasy"] .set-compact select {
+    background: #0a10208c;
+    border: 1px solid #1e3a6b8c;
+    border-radius: 7px;
+    color: var(--ff-ink);
+    font-family: var(--ff-mono);
+    font-size: 11.5px;
+  }
+  html[data-whale-skin="whale-fantasy"] .set-compact select option {
+    background: #0a1020;
+    color: #e8f1ff;
+  }
+  html[data-whale-skin="whale-fantasy"] .set-main-head {
+    padding: 14px 16px 0;
+  }
+  html[data-whale-skin="whale-fantasy"] .set-body {
+    padding: 4px 16px 18px;
+  }
+  html[data-whale-skin="whale-fantasy"] .set-foot {
+    padding: 12px 16px;
+  }
+  html[data-whale-skin="whale-fantasy"] .set-modal .set-card {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    height: calc(100vh - 24px);
+    max-height: calc(100vh - 24px);
+    border-radius: 16px;
+  }
+}
+
+/* 减少动态效果：停掉自身的过渡与脉冲（背景视频由模块暂停） */
+@media (prefers-reduced-motion: reduce) {
+  html[data-whale-skin="whale-fantasy"] * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

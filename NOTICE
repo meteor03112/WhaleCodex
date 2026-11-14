@@ -1,0 +1,28 @@
+WhaleCodex 1.2.0
+Copyright 2026 WhaleCodex contributors
+https://github.com/meteor03112/WhaleCodex
+
+Independent application code, public documentation and the geometric whale logo
+created for this public source preparation are licensed under Apache License 2.0.
+No trademark rights or endorsement by model providers or other projects is implied.
+
+Third-party frontend components retain their respective licenses:
+- marked 18.1.3: MIT; MarkedJS / Christopher Jeffrey.
+- highlight.js 11.12.0 (including styles): BSD-3-Clause; highlight.js contributors.
+- DOMPurify 3.4.17: dual Apache-2.0 OR MPL-2.0; Cure53 and contributors.
+  Bundled runtime helper notices are retained in the vendor file.
+- opencc-js conversion bundle: MIT; The nk2028 Project.
+  OpenCC dictionaries originate from OpenCC (Apache-2.0); corresponding license
+  is retained in app/vendor/licenses/OpenCC.LICENSE.
+See app/vendor/licenses and file headers for license texts.
+
+OPTIONAL NONCOMMERCIAL THEME EXCEPTION
+app/themes/whale-fantasy contains adapted theme code under CC BY-NC-SA 4.0,
+not Apache-2.0. Original author: stushansusu.
+Source: zhu1090093659/dsh-web, commit 971cc3e1f6f5b52bbcd86802a9be0e0c50fc32f1,
+market/dist/assets/skins/whale-fantasy.
+The upstream license and attribution are retained. Upstream video and preview
+images are omitted. The theme is disabled and excluded from default packages.
+
+Electron, Chromium, electron-builder and external Codex/whisper/model runtimes
+retain their own licenses. External binaries are not included in this source tree.

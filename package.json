@@ -1,0 +1,37 @@
+{
+  "name": "whale-codex",
+  "version": "1.2.0",
+  "description": "WhaleCodex：面向多模型对话与编程任务的 Electron 桌面工作台",
+  "main": "app/main.js",
+  "author": "WhaleCodex contributors",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/meteor03112/WhaleCodex",
+  "repository": { "type": "git", "url": "https://github.com/meteor03112/WhaleCodex.git" },
+  "bugs": { "url": "https://github.com/meteor03112/WhaleCodex/issues" },
+  "scripts": {
+    "start": "electron .",
+    "check": "node scripts/check.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "build": "node scripts/build.cjs",
+    "build:win": "node scripts/build.cjs --win",
+    "build:linux": "node scripts/build.cjs --linux",
+    "build:mac": "node scripts/build.cjs --mac"
+  },
+  "devDependencies": { "electron": "45.2.2", "electron-builder": "26.18.0" },
+  "build": {
+    "appId": "local.whale.codex",
+    "productName": "WhaleCodex",
+    "copyright": "Copyright © 2026 WhaleCodex contributors",
+    "directories": { "output": "dist", "buildResources": "assets" },
+    "files": ["app/**/*", "package.json", "LICENSE", "NOTICE", "README.md", "!app/themes/**"],
+    "extraResources": [{ "from": "assets", "to": "assets" }, { "from": "app/whale-mcp-server.js", "to": "mcp/whale-mcp-server.js" }],
+    "npmRebuild": false,
+    "asar": true,
+    "electronFuses": { "runAsNode": true, "enableNodeOptionsEnvironmentVariable": false, "enableNodeCliInspectArguments": false, "onlyLoadAppFromAsar": true, "enableCookieEncryption": true, "enableEmbeddedAsarIntegrityValidation": true, "grantFileProtocolExtraPrivileges": false },
+    "win": { "icon": "assets/app.ico", "target": [{ "target": "nsis", "arch": ["x64"] }, { "target": "portable", "arch": ["x64"] }] },
+    "linux": { "icon": "assets/app-512.png", "category": "Development", "executableName": "whalecodex", "target": ["deb", "zip"], "maintainer": "WhaleCodex contributors", "artifactName": "WhaleCodex-${version}-${arch}.${ext}" },
+    "mac": { "category": "public.app-category.developer-tools", "target": ["zip"] },
+    "nsis": { "oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true, "shortcutName": "WhaleCodex", "createDesktopShortcut": true, "createStartMenuShortcut": true, "artifactName": "WhaleCodex-Setup-${version}.${ext}" },
+    "portable": { "artifactName": "WhaleCodex-Portable-${version}.${ext}" }
+  }
+}

@@ -1,0 +1,17 @@
+node_modules/
+dist/
+external-resources/
+.env
+.env.*
+*.key
+*.p12
+*.pfx
+*private*.pem
+settings.json
+auth.json
+license.json
+sessions/
+chats/
+logs/
+*.log
+.DS_Store
