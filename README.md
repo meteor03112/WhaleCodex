@@ -3,7 +3,6 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 CI 模板位于 [docs/ci-workflow.yml.example](docs/ci-workflow.yml.example)，当前未启用 GitHub Actions；本次发布已在本机运行语法和模块回归检查。
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
 <p align="center"><img src="assets/logo.svg" width="160" alt="WhaleCodex 原创几何鲸鱼 logo"></p>
 
