@@ -3393,6 +3393,7 @@ function createWebViewFactory(getTargetWin) {
       // 绝不把主窗口坐标套到工具窗上。
       view.__host = host;
       host.contentView.addChildView(view);
+      if (typeof view.setVisible === 'function') view.setVisible(false);
       if (bounds) this.setBounds(view, bounds);
       const wc = view.webContents;
       // 新窗口 / target=_blank 不打开系统浏览器，统一在本 view 内导航或拒绝。
@@ -3426,6 +3427,7 @@ function createWebViewFactory(getTargetWin) {
         const w = Math.max(1, Math.min(wb.width - x, Math.round(Number(b.width) || 1)));
         const h = Math.max(1, Math.min(wb.height - y, Math.round(Number(b.height) || 1)));
         view.setBounds({ x, y, width: w, height: h });
+        if (typeof view.setVisible === 'function') view.setVisible(w > 1 && h > 1);
       } catch (e) {}
     },
     nav(view, action) {
@@ -5037,15 +5039,14 @@ const server = http.createServer(async (req, res) => {
       if (sub === 'files' && req.method === 'GET') return json(W.listFiles(q.get('dir')));
       if (sub === 'file' && req.method === 'GET') return json(W.readFile(q.get('path')));
       if (sub === 'file' && req.method === 'PUT') return json(W.writeFile(b.path, b.text, b.version));
-      if (sub === 'web/read' && req.method === 'POST') return json(await W.webRead(b));
-      if (sub === 'web/follow' && req.method === 'POST') return json(await W.webFollow(b));
+      // Background reading has been removed from the product; old clients receive a bounded response.
+      if ((sub === 'web/read' || sub === 'web/follow') && req.method === 'POST') {
+        return json({ ok: false, error: 'background_reading_removed' }, 410);
+      }
       if (sub === 'web/open' && req.method === 'POST') return json(W.openWeb(b.tabId, b.url, b.bounds));
       if (sub === 'web/bounds' && req.method === 'POST') return json(W.setViewBounds(b.tabId, b.bounds));
-      if (sub === 'web/nav' && req.method === 'POST') return json(W.navView(b.tabId, b.action));
-      if (sub === 'web/visible' && req.method === 'POST') {
-        if (b.visible === false) W.hideAllViews();
-        return json({ ok: true, visible: b.visible !== false });
-      }
+      if (sub === 'web/nav' && req.method === 'POST') return json(b.action === 'close' ? W.closeWeb(b.tabId) : W.navView(b.tabId, b.action));
+      if (sub === 'web/visible' && req.method === 'POST') return json(W.setViewsVisible(b.visible, b.tabId));
       if (sub === 'download' && req.method === 'POST') {
         res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8',
           'Cache-Control': 'no-cache', Connection: 'keep-alive' });

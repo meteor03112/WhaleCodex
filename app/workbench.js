@@ -240,7 +240,9 @@
     const t = S.tabs.find((x) => x.id === id);
     const p = S.panels.get(id);
     if (!t) return;
-    if (t.type === 'web' && p && p.url) {
+    if (t.type === 'web') {
+      if (p) { p.closed = true; p.requestId = (p.requestId || 0) + 1; p.url = ''; }
+      delete t.url;
       try { await post('web/nav', { tabId: id, action: 'close' }); } catch (e) {}
     }
     if (p) {
@@ -285,10 +287,11 @@
     // 同一时刻只显示一个活动面板；其余不占布局、不接收指针。
     for (const [tid, p] of S.panels) if (p.el) p.el.hidden = tid !== id;
     renderTabs();
-    try { post('ui', { activeTabId: id, sessionId: currentSessionId() }); } catch (e) {}
+    S.webUiReady = post('ui', { activeTabId: id, sessionId: currentSessionId() }).catch(() => {});
     // 切离网页时先收起原生视图，避免 WebContentsView 盖住侧聊/文件面板。
     const cur = S.panels.get(id);
     if (!cur || cur.type !== 'web') { post('web/visible', { visible: false }).catch(() => {}); }
+    else if (cur.tab.url && !cur.closed && cur.restoreWeb) cur.restoreWeb().catch(() => {});
     reportWebBounds();
   }
 
@@ -1038,37 +1041,42 @@
         '<button class="wb-mini" data-a="reload">↻</button>' +
         '<input class="wb-url" placeholder="https://…（在应用内网页页签打开）">' +
         '<button class="wb-mini primary" data-a="go">打开</button>' +
-        '<button class="wb-mini" data-a="read" title="交给模型后台阅读，不弹网页">后台阅读</button>' +
+        '<button class="wb-mini" data-a="close-web" title="关闭当前网页">关闭网页</button>' +
       '</div>' +
       '<div class="wb-read-note">桌面内嵌网页由主进程 WebContentsView 承载（独立 session，不注入主 UI 令牌）。点击聊天里的链接也会打开这里。</div>' +
-      '<div class="wb-web-slot" id="wbweb-' + p.tab.id + '"><div class="wb-web-hint">输入网址或点击聊天中的链接</div></div>' +
-      '<pre class="wb-read-out" hidden></pre>';
-    const input = $('.wb-url', p.el), out = $('.wb-read-out', p.el);
+      '<div class="wb-web-slot" id="wbweb-' + p.tab.id + '"><div class="wb-web-hint">输入网址或点击聊天中的链接</div></div>';
+    const input = $('.wb-url', p.el);
     const slot = $('#wbweb-' + p.tab.id, p.el);
     p.slot = slot;
     const go = async () => {
       const url = input.value.trim(); if (!url) return;
+      const requestId = p.requestId = (p.requestId || 0) + 1;
+      p.closed = false;
+      await S.webUiReady;
+      if (S.activeTabId !== p.tab.id || !S.open || p.closed || requestId !== p.requestId) return;
+      await post('web/visible', { visible: true, tabId: p.tab.id });
+      if (S.activeTabId !== p.tab.id || !S.open || p.closed || requestId !== p.requestId) return;
       const r = await post('web/open', { tabId: p.tab.id, url, bounds: slotBounds(slot) });
+      if (p.closed || requestId !== p.requestId || !S.panels.has(p.tab.id)) return;
       if (r.error) return toast(r.error);
-      p.url = url; reportWebBounds();
+      p.url = url; p.tab.url = url; reportWebBounds();
     };
+    p.restoreWeb = go;
     $('[data-a="go"]', p.el).onclick = go;
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
     for (const a of ['back', 'forward', 'reload']) {
       $('[data-a="' + a + '"]', p.el).onclick = () => post('web/nav', { tabId: p.tab.id, action: a }).catch(() => {});
     }
-    $('[data-a="read"]', p.el).onclick = async () => {
-      const url = input.value.trim(); if (!url) return;
-      out.hidden = false; out.textContent = '后台读取中…';
-      const d = await post('web/read', { url, maxChars: 6000 });
-      out.textContent = d.error ? ('读取失败：' + d.error)
-        : ['最终 URL: ' + d.finalUrl, '状态: ' + d.status + ' · 获取时间: ' + d.fetchedAt,
-           '来源: ' + d.sourceKind + ' · 截断: ' + (d.truncated ? '是' : '否'), '', d.text].join('\n');
+    $('[data-a="close-web"]', p.el).onclick = async () => {
+      p.closed = true; p.requestId = (p.requestId || 0) + 1;
+      p.url = ''; delete p.tab.url; input.value = '';
+      await post('web/nav', { tabId: p.tab.id, action: 'close' });
     };
     if (p.tab.url) {
       // 重启后 WebContentsView 是内存态，需要按持久化的 URL 重新挂载。
       p.url = p.tab.url; input.value = p.tab.url;
-      post('web/open', { tabId: p.tab.id, url: p.tab.url, bounds: slotBounds(slot) }).catch(() => {});
+      // Only the focused tab may restore its native view.
+      if (S.activeTabId === p.tab.id) go().catch(() => {});
     }
     const ro = new ResizeObserver(() => reportWebBounds());
     ro.observe(slot); p.ro = ro;
@@ -1086,14 +1094,16 @@
     const sels = ['.set-modal:not([hidden])', '.rs-pop:not([hidden])', '.rs-scope.is-open', '#btnModel.is-open'];
     return sels.some((s) => { const e = $(s); return e && e.getBoundingClientRect().width > 4; });
   }
-  function reportWebBounds() {
-    if (!S.open) return;
+  async function reportWebBounds() {
+    await S.webUiReady;
+    if (!S.open) { post('web/visible', { visible: false }).catch(() => {}); return; }
     const p = activeWebPanel();
     if (!p || !p.slot || !p.url || overlayVisible()) { post('web/visible', { visible: false }).catch(() => {}); return; }
     const b = slotBounds(p.slot);
     if (!b || b.width < 20 || b.height < 20) return;
     S.lastBounds = b;
-    post('web/visible', { visible: true }).catch(() => {});
+    await post('web/visible', { visible: true, tabId: p.tab.id }).catch(() => {});
+    if (!S.open || S.activeTabId !== p.tab.id || p.closed || overlayVisible()) return;
     post('web/bounds', { tabId: p.tab.id, bounds: b }).catch(() => {});
   }
   function hideWebForOverlay(force) {
@@ -1318,9 +1328,10 @@
     const p = S.panels.get(t.id);
     const inp = p && $('.wb-url', p.el);
     if (inp) inp.value = url;
-    const r = await post('web/open', { tabId: t.id, url, bounds: slotBounds(p && p.slot) });
-    if (r.error) return toast(r.error);
-    p.url = url; t.url = url; t.title = url.replace(/^https?:\/\//, '').slice(0, 28);
+    if (!p || !p.restoreWeb) return;
+    await p.restoreWeb();
+    if (p.closed || S.activeTabId !== t.id) return;
+    t.title = url.replace(/^https?:\/\//, '').slice(0, 28);
     renderTabs(); reportWebBounds();
   }
 
